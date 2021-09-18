@@ -1,0 +1,39 @@
+
+<div class="container">
+    <div class="row clearfix">
+		<div class="col-md-12 column">
+			<table class="table table-bordered table-hover" id="tab_logic">
+				<thead>
+					<tr>
+						<th class="text-center">
+							Nombre
+						</th>
+						<th class="text-center">
+							Precio
+						</th>
+						<th class="text-center">
+							Imagen
+						</th>
+					</tr>
+				</thead>
+				<tbody>        
+                    {{#each productos}}
+                    <tr id='addr0'>
+						<th class="text-center">
+							{{this.title}}
+						</th>
+                        <th class="text-center">
+							{{this.price}}$
+						</th>
+						<th>
+						<div class="col-md-4">
+							<img src="{{this.thumbnail}} " width="20%">
+						</th>
+					</body>
+					</tr>
+                    {{/each}}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
