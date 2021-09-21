@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "bootstrap": "^5.1.1",
+    "handlebars": "^4.7.7"
+  }
+}
