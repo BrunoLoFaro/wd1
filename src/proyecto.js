@@ -1,7 +1,6 @@
 import express from 'express';
 import moment from 'moment'
 import path from 'path'
-import handlebars from 'express-handlebars'
 import { ListaProductos,vLote, listaProd } from './claseProducto.js';
 
 const app = express();
@@ -14,29 +13,17 @@ const server = app.listen(PORT, ()=>{
 server.on('error', error=>console.log('Error en servidor', error));
 
 app.use(express.static('../public'));
+app.use(express.urlencoded({extended: false}));
+app.use(express.json());
 
-app.engine(
-    "hbs",
-    handlebars({
-        extname: ".hbs",
-        defaultLayout: "index.hbs",
-        layoutsDir: "../views/layouts",
-        partialsDir: "../views/partials"
-    })
-);
-app.set('views', '../views'); // especifica el directorio de vistas
-app.set('view engine', 'hbs'); // registra el motor de plantillas
+app.set('views', '../views');
+app.set('view engine', 'pug');
 
 app.use('/api', router);
-
 
 app.get('/', function(req, res){
     res.sendFile('index.html', { root: ''} );
 });
-
-app.use(express.urlencoded({extended: true}));
-
-
 
 app.get('/productos/listar', (req,res)=>{
     let vProductos

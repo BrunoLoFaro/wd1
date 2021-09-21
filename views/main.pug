@@ -1,0 +1,19 @@
+link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous")
+
+div(class="container")
+    div(class="row clearfix")
+    div(class="col-md-12 column")
+      table(class="table table-bordered table-hover" id="tab_logic")
+        thead
+          tr
+            th(class="text-center")="Nombre"
+            th(class="text-center")="Precio"
+            th(class="text-center")="Imagen"
+        tbody       
+          each prod in productos
+            tr(id='addr0')
+            th(class="text-center")=prod.title
+            th(class="text-center")="$"+prod.price
+            th
+              div(class="col-md-4")
+                img(src= prod.thumbnail width="20%")
