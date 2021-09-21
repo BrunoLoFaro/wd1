@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('partials/header.ejs') %>
+<body>
+<div class="container">
+    <div class="row clearfix">
+		<div class="col-md-12 column">
+			<table class="table table-bordered table-hover" id="tab_logic">
+				<thead>
+					<tr>
+						<th class="text-center">
+							Nombre
+						</th>
+						<th class="text-center">
+							Precio
+						</th>
+						<th class="text-center">
+							Imagen
+						</th>
+					</tr>
+				</thead>
+				<tbody>        
+                    <% productos.forEach(function(prod) { %>
+                    <tr id='addr0'>
+						<th class="text-center">
+							<%=prod.title%>
+						</th>
+                        <th class="text-center">
+							<%=prod.price%>$
+						</th>
+						<th>
+						<div class="col-md-4">
+							<img src=<%=prod.thumbnail%> width=50%>
+						</th>
+					</body>
+					</tr>
+                    <%});%>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+</body>
+</html>
