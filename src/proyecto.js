@@ -1,5 +1,4 @@
 import express from 'express';
-import moment from 'moment'
 import path from 'path'
 import handlebars from 'express-handlebars'
 import { ListaProductos,vLote, listaProd } from './claseProducto.js';
