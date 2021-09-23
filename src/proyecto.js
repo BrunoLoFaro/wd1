@@ -1,18 +1,38 @@
 import express from 'express';
-import path from 'path'
+const app = express();
 import handlebars from 'express-handlebars'
 import { ListaProductos,vLote, listaProd } from './claseProducto.js';
+import http1 from 'http'
+const http = http1.Server(app)
+import { Server } from "socket.io";
+const io = new Server(http);
 
-const app = express();
-const PORT = 8080;
+const PORT = 3000;
 const router = express.Router();
 
-const server = app.listen(PORT, ()=>{
-    console.log('Servidor HTTP escuchando en el puerto', server.address().port);
-});
+const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT))
+let lista=listaProd.getProductos()
+
+io.on('connection', (socket)=> {
+    console.log("conectado"+ lista)
+    socket.emit('productos',lista)
+    socket.on('producto',data=>{
+        console.log(data)
+        listaProd.setProducto(data)
+            io.sockets.emit('producto',data)
+    })
+    socket.on('vaciar',data=>{
+        listaProd.empty();
+        socket.emit('productos',lista)       
+    })
+})
+
+
 server.on('error', error=>console.log('Error en servidor', error));
 
-app.use(express.static('../public'));
+app.use(express.urlencoded({extended: false}));
+
+app.use(express.static('../views'));
 
 app.engine(
     "hbs",
@@ -28,14 +48,12 @@ app.set('view engine', 'hbs'); // registra el motor de plantillas
 
 app.use('/api', router);
 
-
-app.get('/', function(req, res){
-    res.sendFile('index.html', { root: ''} );
+app.get('/', (req,res)=>{
+    let vProductos
+    vProductos=listaProd.getProductos()
+    var scripts = [{ script: '/layouts/index.js' }];
+    res.render('main',{});
 });
-
-app.use(express.urlencoded({extended: true}));
-
-
 
 app.get('/productos/listar', (req,res)=>{
     let vProductos
@@ -61,12 +79,6 @@ app.get('/productos/listar/:id', (req,res)=>{
     res.json(busq);
 });
 
-app.get('/productos/vista', (req,res)=>{
-    let vProductos
-    vProductos=listaProd.getProductos()
-
-    res.render('main',{productos: vProductos})
-});
 
 app.post('/productos/guardar/',(req,res)=>{
     let body = req.body;
@@ -81,8 +93,12 @@ app.post('/productos/guardar/',(req,res)=>{
     catch{
         incorporado={}
     }
+    /*if(Object.entries(incorporado).length===0){
+        io.socket.emit('producto', body);
+    }*/
     res.json({incorporado});
 });
+
 
 app.put('/productos/actualizar/:id/:titulo/:precio/:imagen', (req,res)=>{
     let params = req.params;
@@ -118,3 +134,4 @@ app.delete('/productos/eliminar/:id', (req,res)=>{
     }
     res.json({eliminado});
 });
+

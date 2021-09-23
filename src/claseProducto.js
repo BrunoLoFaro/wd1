@@ -10,7 +10,7 @@ export class ListaProductos{
         let busq= this.vLista.find(x=>x.id==id)
         return busq
     }
-    setProducto(prod, id){
+    setProducto(prod, id=2){
         try{
             prod.id=id
             this.vLista.push(prod)
@@ -45,26 +45,29 @@ export class ListaProductos{
         }
         return auxEliminado
     }
+    empty(){
+        this.vLista.splice(0, this.vLista.length)
+    }
 }
 
 let vLote =
 [
 	{
-		title: "vaso",
+		title: "Kendall - analisis y diseño de sistemas",
 		price: 124,
-		thumbnail: "https://w7.pngwing.com/pngs/859/290/png-transparent-table-glass-drawing-idea-glass-angle-white-thumbnail.png",
+		thumbnail: "http://2.bp.blogspot.com/_n0EM_zLV8hI/SzVkcaB9RxI/AAAAAAAAEzw/Hv37qoPvy7s/s400/Kendall+%26+Kendall+-+Analisis+y+dise%C3%B1o+de+sistemas+-+box.jpg",
 		id: 1
 	},
 	{
-		title: "reloj",
+		title: "Dan Brown - La fortaleza digital",
 		price: 434,
-		thumbnail: "https://e7.pngegg.com/pngimages/764/942/png-clipart-alarm-clocks-watch-manecilla-clock-alarm-clocks-watch.png",
+		thumbnail: "https://bibliotecaquijote.files.wordpress.com/2012/02/la-fortaleza-digital.jpg",
 		id: 2
 	},
 	{
-		title: "miel",
+		title: "Raymond Chang - Química",
 		price: 72,
-		thumbnail: "https://cdn-icons-png.flaticon.com/512/1378/1378481.png",
+		thumbnail: "https://contentv2.tap-commerce.com/cover/large/9786071513939_1.jpg?id_com=1113",
 		id: 3
 	}
 ]
