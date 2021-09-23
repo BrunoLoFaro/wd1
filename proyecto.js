@@ -39,11 +39,11 @@ app.engine(
     handlebars({
         extname: ".hbs",
         defaultLayout: "index.hbs",
-        layoutsDir: "/views/layouts",
-        partialsDir: "/views/partials"
+        layoutsDir: "views/layouts",
+        partialsDir: "views/partials"
     })
 );
-app.set('views', '/views'); // especifica el directorio de vistas
+app.set('views', 'views'); // especifica el directorio de vistas
 app.set('view engine', 'hbs'); // registra el motor de plantillas
 
 app.use('/api', router);
@@ -52,7 +52,7 @@ app.get('/', (req,res)=>{
     let vProductos
     vProductos=listaProd.getProductos()
     var scripts = [{ script: '/layouts/index.js' }];
-    res.render('./views/main',{});
+    res.render('main',{});
 });
 
 app.get('/productos/listar', (req,res)=>{
