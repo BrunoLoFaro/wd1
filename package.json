@@ -2,6 +2,7 @@
   "type": "module",
   "devDependencies": {
     "bootstrap": "^5.1.1",
+    "email-validator": "^2.0.4",
     "express": "^4.17.1",
     "express-handlebars": "^5.3.3",
     "socket.io": "^4.2.0"
