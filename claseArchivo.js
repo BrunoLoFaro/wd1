@@ -29,20 +29,23 @@ class archivo{
 }
 
 const nombreArch="./mensajes.txt"
+/*
 let mensajes = [
     {autor: "Mariano", texto: "Hola a tod@s!"},
     {autor: "Romina", texto: "Buenísimo!!!"},
     {autor: "Dario", texto: "Hay alguien ahi?"}
-];
+];*/
 
 let archMensajes = new archivo(nombreArch)
 
+/*
 async function cargarLoteArchivo(){
     for(let e of mensajes){
         await archMensajes.guardar(e)
     }
 } 
+*/
 
-cargarLoteArchivo()
+//cargarLoteArchivo()
 
 export {archMensajes}

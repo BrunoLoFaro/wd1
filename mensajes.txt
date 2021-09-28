@@ -1,22 +1,12 @@
 [
 	{
-		"autor": "Mariano",
-		"texto": "Hola a tod@s!",
+		"autor": "lofarobruno@gmail.com",
+		"texto": "muy buenas",
 		"id": 1
 	},
 	{
-		"autor": "Romina",
-		"texto": "Buenísimo!!!",
-		"id": 2
-	},
-	{
-		"autor": "Dario",
-		"texto": "Hay alguien ahi?",
-		"id": 3
-	},
-	{
 		"autor": "lofarobruno@gmail.com",
-		"texto": "gustazo chicos",
-		"id": 4
+		"texto": "espero que anden bien, alumnos. Esta es nuestra clase",
+		"id": 2
 	}
 ]

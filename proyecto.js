@@ -1,3 +1,4 @@
+//-----imports-----
 import express from 'express';
 const app = express();
 import handlebars from 'express-handlebars'
@@ -9,16 +10,14 @@ import { Server } from "socket.io";
 const io = new Server(http);
 import validator from 'email-validator'
 
+
 const PORT = 3000;
 const router = express.Router();
 
 const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT))
 let lista=listaProd.getProductos()
-let mensajes = [
-    {autor: "Mariano", texto: "Hola a tod@s!"},
-    {autor: "Romina", texto: "Buenísimo!!!"},
-    {autor: "Dario", texto: "Hay alguien ahi?"}
-];
+
+//-----websocket triggers-----
 
 io.on('connection', (socket)=> {
     console.log("conectado"+ lista)
@@ -32,7 +31,6 @@ io.on('connection', (socket)=> {
             listaProd.setProducto(data)
                 io.sockets.emit('producto',data)
         })
-
 
         socket.on('nuevo-mensaje', (data)=>{
             archMensajes.guardar(data).then(()=>{
@@ -48,7 +46,7 @@ io.on('connection', (socket)=> {
         })       
 })
 
-
+//-----handlebar config-----
 server.on('error', error=>console.log('Error en servidor', error));
 
 app.use(express.urlencoded({extended: false}));
@@ -67,11 +65,11 @@ app.engine(
 app.set('views', 'views'); // especifica el directorio de vistas
 app.set('view engine', 'hbs'); // registra el motor de plantillas
 
+//?
 app.use('/api', router);
 
+//-----comportamiento de la pagina a los metodos http-----
 app.get('/', (req,res)=>{
-    /*let vProductos
-    vProductos=listaProd.getProductos()*/
     var scripts = '/layouts/index.js';
     res.render('main',{script: scripts});
 });
@@ -114,9 +112,6 @@ app.post('/productos/guardar/',(req,res)=>{
     catch{
         incorporado={}
     }
-    /*if(Object.entries(incorporado).length===0){
-        io.socket.emit('producto', body);
-    }*/
     res.json({incorporado});
 });
 
