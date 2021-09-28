@@ -1,5 +1,3 @@
-//import { BroadcastOperator } from "socket.io";
-
 var socket = io();
 
 function vaciar(){
@@ -100,15 +98,3 @@ function enviarMensaje(e){
     socket.emit('nuevo-mensaje', envio);
     return false;
 }
-
-/*
-socket.on('atodos', (data) => {
-    let ul = document.getElementsByTagName('ul')[0];
-    ul.innerHTML = '';
-    for (mensaje of data) {
-        let ul = document.getElementsByTagName('ul')[0];
-        let li = document.createElement('li');
-        ul.appendChild(li);
-        li.innerHTML = `SocketId: ${mensaje.socketId} - Mensaje: ${mensaje.mensaje}`;
-    }
-})*/

@@ -2,11 +2,13 @@ import express from 'express';
 const app = express();
 import handlebars from 'express-handlebars'
 import { ListaProductos,vLote, listaProd } from './claseProducto.js';
+//import { ListaProductos,vLote, listaProd } from './claseArchvi.js';
 import http1 from 'http'
 const http = http1.Server(app)
 import { Server } from "socket.io";
 const io = new Server(http);
-import validator from 'email-validator'
+import fs from 'fs'
+
 
 const PORT = 3000;
 const router = express.Router();
