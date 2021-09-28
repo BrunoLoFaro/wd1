@@ -45,7 +45,7 @@ socket.on('producto', (data) => {
 
 socket.on('productos', (data) => {
     console.log(data)
-    for(e of data){
+    for(let e of data){
     let tabla = document.getElementById('tabla');
         let fila = document.createElement('tr');
             let contenedor = document.createElement('div');
@@ -69,6 +69,37 @@ socket.on('productos', (data) => {
         tabla.append(fila)
     }
 })
+function ValidateEmail(mail) 
+{
+ if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail))
+  {
+    return (true)
+  }
+    alert("Ingresó una direccion de mail incorrecta!")
+    return (false)
+}
+socket.on('mensajes', (data)=>{
+    render(data);
+});
+
+let render = (data) => {
+    let html = data.map((e,i)=>`
+        <div>
+            <strong>${e.autor}</strong>
+            <em>${e.texto}</em>
+        </div>
+    `).join(' ');
+    document.getElementById("mensajes").innerHTML = html;
+}
+function enviarMensaje(e){
+    let envio = {
+        autor: document.getElementById('mail').value,
+        texto: document.getElementById('texto').value,
+    }
+    if(ValidateEmail(envio.autor))
+    socket.emit('nuevo-mensaje', envio);
+    return false;
+}
 
 /*
 socket.on('atodos', (data) => {

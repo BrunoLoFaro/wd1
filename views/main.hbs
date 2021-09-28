@@ -1,4 +1,3 @@
-    <script src="/layouts/index.js" ></script>
 	<style>
 		#del {
 			position: absolute;
@@ -53,3 +52,12 @@
 		</div>
 	</div>
 </div>
+
+<h1>Chat en línea</h1>
+<div id="mensajes"></div>
+<br>
+<form onsubmit="return enviarMensaje(this)" style="margin:20px;">
+	<input type="text" id="mail" placeholder="Su nombre...">
+	<input type="text" id="texto" placeholder="Su mensaje...">
+	<input type="submit" value="a">
+</form>

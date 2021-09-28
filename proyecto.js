@@ -6,25 +6,38 @@ import http1 from 'http'
 const http = http1.Server(app)
 import { Server } from "socket.io";
 const io = new Server(http);
+import validator from 'email-validator'
 
 const PORT = 3000;
 const router = express.Router();
 
 const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT))
 let lista=listaProd.getProductos()
+let mensajes = [
+    {autor: "Mariano", texto: "Hola a tod@s!"},
+    {autor: "Romina", texto: "Buenísimo!!!"},
+    {autor: "Dario", texto: "Hay alguien ahi?"}
+];
 
 io.on('connection', (socket)=> {
     console.log("conectado"+ lista)
     socket.emit('productos',lista)
+    socket.emit('mensajes', mensajes);
     socket.on('producto',data=>{
         console.log(data)
         listaProd.setProducto(data)
             io.sockets.emit('producto',data)
     })
+    socket.on('nuevo-mensaje', (data)=>{
+        mensajes.push(data);
+        console.log(data)
+        io.sockets.emit('mensajes', mensajes);
+    });
     socket.on('vaciar',data=>{
         listaProd.empty();
         socket.emit('productos',lista)       
     })
+
 })
 
 
@@ -49,10 +62,10 @@ app.set('view engine', 'hbs'); // registra el motor de plantillas
 app.use('/api', router);
 
 app.get('/', (req,res)=>{
-    let vProductos
-    vProductos=listaProd.getProductos()
-    var scripts = [{ script: '/layouts/index.js' }];
-    res.render('main',{});
+    /*let vProductos
+    vProductos=listaProd.getProductos()*/
+    var scripts = '/layouts/index.js';
+    res.render('main',{script: scripts});
 });
 
 app.get('/productos/listar', (req,res)=>{
