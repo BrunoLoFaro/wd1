@@ -1,0 +1,22 @@
+[
+	{
+		"autor": "Mariano",
+		"texto": "Hola a tod@s!",
+		"id": 1
+	},
+	{
+		"autor": "Romina",
+		"texto": "Buenísimo!!!",
+		"id": 2
+	},
+	{
+		"autor": "Dario",
+		"texto": "Hay alguien ahi?",
+		"id": 3
+	},
+	{
+		"autor": "lofarobruno@gmail.com",
+		"texto": "gustazo chicos",
+		"id": 4
+	}
+]

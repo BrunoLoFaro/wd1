@@ -2,6 +2,7 @@ import express from 'express';
 const app = express();
 import handlebars from 'express-handlebars'
 import { ListaProductos,vLote, listaProd } from './claseProducto.js';
+import { archMensajes} from './claseArchivo.js';
 import http1 from 'http'
 const http = http1.Server(app)
 import { Server } from "socket.io";
@@ -21,23 +22,30 @@ let mensajes = [
 
 io.on('connection', (socket)=> {
     console.log("conectado"+ lista)
-    socket.emit('productos',lista)
-    socket.emit('mensajes', mensajes);
-    socket.on('producto',data=>{
-        console.log(data)
-        listaProd.setProducto(data)
-            io.sockets.emit('producto',data)
-    })
-    socket.on('nuevo-mensaje', (data)=>{
-        mensajes.push(data);
-        console.log(data)
-        io.sockets.emit('mensajes', mensajes);
-    });
-    socket.on('vaciar',data=>{
-        listaProd.empty();
-        socket.emit('productos',lista)       
+    archMensajes.leer().then((mensajes_guardados)=>{
+        io.sockets.emit('mensajes', mensajes_guardados);
     })
 
+    socket.emit('productos',lista)
+
+        socket.on('producto',data=>{
+            listaProd.setProducto(data)
+                io.sockets.emit('producto',data)
+        })
+
+
+        socket.on('nuevo-mensaje', (data)=>{
+            archMensajes.guardar(data).then(()=>{
+                archMensajes.leer().then((vMensajes)=>{
+                console.log(vMensajes)
+                io.sockets.emit('mensajes', vMensajes);
+                })
+            });
+        })
+        socket.on('vaciar',data=>{
+            listaProd.empty();
+            socket.emit('productos',lista)       
+        })       
 })
 
 

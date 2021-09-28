@@ -44,6 +44,8 @@ socket.on('producto', (data) => {
 })
 
 socket.on('productos', (data) => {
+    let tr = document.getElementsByTagName('tr')[0];
+    tr.innerHTML = '';
     console.log(data)
     for(let e of data){
     let tabla = document.getElementById('tabla');
@@ -79,6 +81,8 @@ function ValidateEmail(mail)
     return (false)
 }
 socket.on('mensajes', (data)=>{
+    let div = document.getElementsByTagName('div')[0];
+    div.innerHTML = '';
     render(data);
 });
 
@@ -91,6 +95,7 @@ let render = (data) => {
     `).join(' ');
     document.getElementById("mensajes").innerHTML = html;
 }
+
 function enviarMensaje(e){
     let envio = {
         autor: document.getElementById('mail').value,
@@ -100,15 +105,3 @@ function enviarMensaje(e){
     socket.emit('nuevo-mensaje', envio);
     return false;
 }
-
-/*
-socket.on('atodos', (data) => {
-    let ul = document.getElementsByTagName('ul')[0];
-    ul.innerHTML = '';
-    for (mensaje of data) {
-        let ul = document.getElementsByTagName('ul')[0];
-        let li = document.createElement('li');
-        ul.appendChild(li);
-        li.innerHTML = `SocketId: ${mensaje.socketId} - Mensaje: ${mensaje.mensaje}`;
-    }
-})*/
