@@ -11,7 +11,7 @@ const io = new Server(http);
 import validator from 'email-validator'
 import moment from 'moment'
 
-const PORT = process.env.PORT;
+const PORT = 3000;
 const router = express.Router();
 const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT))
         
