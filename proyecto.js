@@ -3,39 +3,40 @@ import express from 'express';
 const app = express();
 import handlebars from 'express-handlebars'
 import { ListaProductos,vLote, listaProd } from './claseProducto.js';
-import { archMensajes} from './claseArchivo.js';
+import {Archivo} from './claseArchivo.js';
 import http1 from 'http'
 const http = http1.Server(app)
 import { Server } from "socket.io";
 const io = new Server(http);
 import validator from 'email-validator'
-
+import moment from 'moment'
 
 const PORT = 3000;
 const router = express.Router();
-
 const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT))
-let lista=listaProd.getProductos()
+        
+let archMensajes = new Archivo("mensajes.txt");
+
 
 //-----websocket triggers-----
-
-io.on('connection', (socket)=> {
-    console.log("conectado"+ lista)
-    archMensajes.leer().then((mensajes_guardados)=>{
-        io.sockets.emit('mensajes', mensajes_guardados);
-    })
-
-    socket.emit('productos',lista)
-
-        socket.on('producto',data=>{
-            listaProd.setProducto(data)
-                io.sockets.emit('producto',data)
+    io.on('connection', (socket)=> {
+        console.log(`conectado, cliente: ${socket}`)
+        archMensajes.leer().then((mensajes_guardados)=>{
+            io.sockets.emit('mensajes', mensajes_guardados);
         })
 
+        socket.emit('productos',listaProd.getProductos())
+
+            socket.on('producto',data=>{
+                listaProd.setProducto(data)
+                    io.sockets.emit('producto',data)
+            })
+
         socket.on('nuevo-mensaje', (data)=>{
+            let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
+            data.tiempo = tiempo
             archMensajes.guardar(data).then(()=>{
                 archMensajes.leer().then((vMensajes)=>{
-                console.log(vMensajes)
                 io.sockets.emit('mensajes', vMensajes);
                 })
             });
@@ -44,15 +45,14 @@ io.on('connection', (socket)=> {
             listaProd.empty();
             socket.emit('productos',lista)       
         })       
-})
+    })
+
+
 
 //-----handlebar config-----
 server.on('error', error=>console.log('Error en servidor', error));
-
 app.use(express.urlencoded({extended: false}));
-
 app.use(express.static('views'));
-
 app.engine(
     "hbs",
     handlebars({
@@ -64,9 +64,10 @@ app.engine(
 );
 app.set('views', 'views'); // especifica el directorio de vistas
 app.set('view engine', 'hbs'); // registra el motor de plantillas
-
-//?
 app.use('/api', router);
+
+
+
 
 //-----comportamiento de la pagina a los metodos http-----
 app.get('/', (req,res)=>{

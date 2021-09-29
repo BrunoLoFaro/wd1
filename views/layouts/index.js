@@ -7,7 +7,6 @@ function enviar(valor) {
         price:document.getElementById('price').value,
         thumbnail:document.getElementById('thumbnail').value
     };
-    console.log("apretaron el boton "+ prod)
     socket.emit('producto', prod);
     return false
 }
@@ -17,8 +16,9 @@ socket.on('producto', (data) => {
 })
 
 socket.on('productos', (data) => {
-    let tr = document.getElementsByTagName('tr')[0];
-    tr.innerHTML = '';
+    //limpio los elementos de tabla, para evitar duplicados al recargar
+    let tbody = document.getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
     for(let e of data){
         createTable(e);
     }
@@ -27,21 +27,23 @@ socket.on('productos', (data) => {
 socket.on('mensajes', (data)=>{
     let div = document.getElementsByTagName('div')[0];
     div.innerHTML = '';
+    //console.log(dat)
     render(data);
 });
 
 function enviarMensaje(e){
     let envio = {
-        autor: document.getElementById('mail').value,
-        texto: document.getElementById('texto').value,
+        mail: document.getElementById('mail').value,
+        mensaje: document.getElementById('texto').value,
     }
-    if(ValidateEmail(envio.autor))
+    if(ValidateEmail(envio.mail))
     socket.emit('nuevo-mensaje', envio);
     return false;
 }
 
 
-//funciones que manipulan el dom
+//funciones que manipulan el DOM
+
 function createTable(e){
     let tabla = document.getElementById('tabla');
         let fila = document.createElement('tr');
@@ -79,8 +81,9 @@ function ValidateEmail(mail)
 let render = (data) => {
     let html = data.map((e,i)=>`
         <div>
-            <strong>${e.autor}</strong>
-            <em>${e.texto}</em>
+            <strong style="color:blue">${e.mail}</strong>
+            <a style="color:brown" >${e.tiempo}</a>
+            <em style="color:green">${e.mensaje}</em>
         </div>
     `).join(' ');
     document.getElementById("mensajes").innerHTML = html;

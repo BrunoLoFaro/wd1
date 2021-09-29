@@ -1,12 +1,14 @@
 [
 	{
-		"autor": "lofarobruno@gmail.com",
-		"texto": "muy buenas",
+		"mail": "lofarobruno@gmail.com",
+		"mensaje": "Por acá se envian mensajes",
+		"tiempo": "28/09/2021, 17:09:20 pm",
 		"id": 1
 	},
 	{
-		"autor": "lofarobruno@gmail.com",
-		"texto": "espero que anden bien, alumnos. Esta es nuestra clase",
+		"mail": "lofarobruno@gmail.com",
+		"mensaje": "Para enviar uno, hay que completar el campo de mail",
+		"tiempo": "28/09/2021, 17:09:30 pm",
 		"id": 2
 	}
 ]

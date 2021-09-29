@@ -5,6 +5,11 @@
     "email-validator": "^2.0.4",
     "express": "^4.17.1",
     "express-handlebars": "^5.3.3",
+    "moment": "^2.29.1",
     "socket.io": "^4.2.0"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
   }
 }
