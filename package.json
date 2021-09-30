@@ -1,11 +1,19 @@
 {
   "type": "module",
   "devDependencies": {
+    "@babel/preset-typescript": "^7.15.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
     "bootstrap": "^5.1.1",
     "email-validator": "^2.0.4",
     "express": "^4.17.1",
     "express-handlebars": "^5.3.3",
     "moment": "^2.29.1",
-    "socket.io": "^4.2.0"
+    "socket.io": "^4.2.0",
+    "typescript": "^4.4.3"
+  },
+  "scripts": {
+    "ServerES6toJS5": ".\\node_modules\\.bin\\babel .\\proyecto.js -o .\\server.js -w",
+    "ServerTStoJS5": ".\\node_modules\\.bin\\tsc -w"
   }
 }

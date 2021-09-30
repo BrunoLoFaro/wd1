@@ -80,7 +80,7 @@ app.get('/productos/listar', (req,res)=>{
     try{
         vProductos=listaProd.getProductos()
     }
-    catch{
+    catch(e){
         vProductos={}
     }
     res.json({vProductos})
@@ -93,7 +93,7 @@ app.get('/productos/listar/:id', (req,res)=>{
     try{
         busq= listaProd.getProducto(id)
     }
-    catch{
+    catch(e){
         busq={}
     }
     res.json(busq);
@@ -110,7 +110,7 @@ app.post('/productos/guardar/',(req,res)=>{
         incorporado = body
         listaProd.setProducto(body,++id)
     }
-    catch{
+    catch(e){
         incorporado={}
     }
     res.json({incorporado});
@@ -131,7 +131,7 @@ app.put('/productos/actualizar/:id/:titulo/:precio/:imagen', (req,res)=>{
         listaProd.updateProducto(prod,id)
         actualizado=listaProd.getProducto(id)
     }
-    catch{
+    catch(e){
         actualizado={}     
     }
 
@@ -146,7 +146,7 @@ app.delete('/productos/eliminar/:id', (req,res)=>{
         listaProd.eliminateProducto(id)
         eliminado=listaProd.getProducto(id)
     }
-    catch{
+    catch(e){
         eliminado={}
     }
     res.json({eliminado});
