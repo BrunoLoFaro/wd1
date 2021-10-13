@@ -2,8 +2,6 @@
 import express from 'express';
 const app = express();
 import handlebars from 'express-handlebars'
-import { ListaProductos,vLote, listaProd } from './claseProducto.js';
-import {Archivo} from './claseArchivo.js';
 import http1 from 'http'
 const http = http1.Server(app)
 import { Server } from "socket.io";
@@ -11,16 +9,16 @@ const io = new Server(http);
 import validator from 'email-validator'
 import moment from 'moment'
 
-//import options, * as options2 from './options/SQLite3.js';
-import options from './options/SQLite3.js';
-import knex_ from 'knex';
-const knex = knex_(options)
+import {optionsMensajes, optionsProductos} from './options/SQLite3.js';
+import knex from 'knex';
+import { nextTick } from 'process';
+let knexMensajes = knex(optionsMensajes)
+let knexProductos = knex(optionsProductos)
 
 const PORT = 8080//process.env.PORT
 const router = express.Router();
 const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT))
-        
-let archMensajes = new Archivo("mensajes.txt");
+
 
 const vMensajes = [ 
 	{
@@ -37,12 +35,33 @@ const vMensajes = [
 	} 
 ];
 
+let vProductos =
+[
+	{
+		title: "Kendall - analisis y diseño de sistemas",
+		price: 124,
+		thumbnail: "http://2.bp.blogspot.com/_n0EM_zLV8hI/SzVkcaB9RxI/AAAAAAAAEzw/Hv37qoPvy7s/s400/Kendall+%26+Kendall+-+Analisis+y+dise%C3%B1o+de+sistemas+-+box.jpg",
+		id: 1
+	},
+	{
+		title: "Dan Brown - La fortaleza digital",
+		price: 434,
+		thumbnail: "https://bibliotecaquijote.files.wordpress.com/2012/02/la-fortaleza-digital.jpg",
+		id: 2
+	},
+	{
+		title: "Raymond Chang - Química",
+		price: 72,
+		thumbnail: "https://contentv2.tap-commerce.com/cover/large/9786071513939_1.jpg?id_com=1113",
+		id: 3
+	}
+];
 
 (async ()=>{
-    await knex.schema.hasTable('mensajes')
-    .then(()=>console.log("table already exists"))
+    await knexMensajes.schema.hasTable('mensajes')
+    .then(()=>console.log("table mensajes already exists"))
     .catch(()=>{
-        knex.schema.createTable('mensajes', table => {
+        knexMensajes.schema.createTable('mensajes', table => {
             table.string('mail'),
             table.string('mensaje'),
             table.string('tiempo'),
@@ -53,21 +72,43 @@ const vMensajes = [
             console.log('Mensajes insertados...');
         })      
     })
+    await knexProductos.schema.hasTable('productos')
+    .then(()=>console.log("table mensajes already exists"))
+    .catch(()=>{
+        knexMensajes.schema.createTable('productos', table => {
+            table.string('title'),
+            table.float('price'),
+            table.string('thumbnail'),
+            table.increments('id')
+            console.log('Tabla de productos creada...');
+        }).then(()=>{
+            knex('productos').insert(vProductos);
+            console.log('Mensajes insertados...');
+        })      
+    })
 })();
 
 //-----websocket triggers-----
     io.on('connection', (socket)=> {
+        knexMensajes = knex(optionsMensajes)
+        knexProductos = knex(optionsProductos)
         console.log(`conectado, cliente: ${socket}`)
-        knex.from('mensajes').select('*').then((mensajes_guardados)=>{
+        knexMensajes.from('mensajes').select('*').then((mensajes_guardados)=>{
             io.sockets.emit('mensajes', mensajes_guardados);
+        }).then(()=>{
+            //knexMensajes.destroy()
+        })
+        knexProductos.from('productos').select('*').then((productos_guardados)=>{
+            io.sockets.emit('productos', productos_guardados);
+            console.log(productos_guardados)
+        }).then(()=>{
+            //knexProductos.destroy()
         })
 
-        socket.emit('productos',listaProd.getProductos())
-
-            socket.on('producto',data=>{
-                listaProd.setProducto(data)
-                    io.sockets.emit('producto',data)
-            })
+        socket.on('producto',data=>{
+            listaProd.setProducto(data)
+                io.sockets.emit('producto',data)
+        })
 
         socket.on('nuevo-mensaje', (data)=>{
             let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
@@ -83,12 +124,9 @@ const vMensajes = [
             socket.emit('productos',lista)       
         })       
     })
-
-
-
+    
 //-----handlebar config-----
 server.on('error', error=>console.log('Error en servidor', error));
-app.use(express.urlencoded({extended: false}));
 app.use(express.static('views'));
 app.engine(
     "hbs",
@@ -99,10 +137,11 @@ app.engine(
         partialsDir: "views/partials"
     })
 );
+
 app.set('views', 'views'); // especifica el directorio de vistas
 app.set('view engine', 'hbs'); // registra el motor de plantillas
-app.use('/api', router);
-
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));      
 
 
 
@@ -113,79 +152,72 @@ app.get('/', (req,res)=>{
 });
 
 app.get('/productos/listar', (req,res)=>{
-    let vProductos
-    try{
-        vProductos=listaProd.getProductos()
-    }
-    catch{
-        vProductos={}
-    }
-    res.json({vProductos})
+    let productos
+        knexProductos.from('productos').select('*')
+        .then ((r)=>{
+            productos=r
+            console.log('Fila obtenida: '+productos);
+        })
+        .catch(e=>{
+            //next(e)
+            console.log('Error en select:', e);
+        })
+    res.json(productos);
 });
 
 app.get('/productos/listar/:id', (req,res)=>{
-    let params = req.params;
-    let id = params.id;
-    let busq;
-    try{
-        busq= listaProd.getProducto(id)
-    }
-    catch{
-        busq={}
-    }
-    res.json(busq);
+    let id = req.params;
+    let producto
+        knexProductos.from('productos').select('*').where('id', '=', id)
+        .then ((r)=>{
+            producto=r
+            console.log('Fila obtenida: '+producto);
+        })
+        .catch(e=>{
+            //next(e)
+            console.log('Error en select:', e);
+        })
+    res.json(producto);
 });
 
 
 app.post('/productos/guardar/',(req,res)=>{
-    let body = req.body;
-    let vProductos=listaProd.getProductos()
-    let pos=vProductos.length
-    let id=vProductos[pos-1].id
-    let incorporado
-    try{
-        incorporado = body
-        listaProd.setProducto(body,++id)
-    }
-    catch{
-        incorporado={}
-    }
-    res.json({incorporado});
+    let producto = req.body;
+        knexProductos('productos').insert(producto)
+        .then (()=>{
+            console.log('Fila insertada!');
+        })
+        .catch(e=>{
+            //next(e)
+            console.log('Error en Insert:', e);
+        })
+    res.json(producto);
 });
 
 
-app.put('/productos/actualizar/:id/:titulo/:precio/:imagen', (req,res)=>{
-    let params = req.params;
-    let id = params.id;
-    let prod ={		
-        title: params.titulo,//por query los params vienen como string.
-        price: parseInt(params.precio),//tendría efecto si usaramos una bd.
-        thumbnail: params.imagen,
-        id: id, 
-    }
-    let actualizado
-    try{
-        listaProd.updateProducto(prod,id)
-        actualizado=listaProd.getProducto(id)
-    }
-    catch{
-        actualizado={}     
-    }
-
-    res.json({actualizado});
+app.put('/productos/actualizar', (req,res)=>{
+    let producto = req.body;
+        knexProductos.from('productos').where('id', '=', producto.id).update(producto)
+        .then (()=>{
+            console.log('Fila insertada!');
+        })
+        .catch(e=>{
+            //next(e)
+            console.log('Error en Insert:', e);
+        })
+    res.json(producto);
 });
 
 app.delete('/productos/eliminar/:id', (req,res)=>{
-    let params = req.params;
-    let id = params.id;
-    let eliminado
-    try{
-        listaProd.eliminateProducto(id)
-        eliminado=listaProd.getProducto(id)
-    }
-    catch{
-        eliminado={}
-    }
-    res.json({eliminado});
+    let id = req.params;
+        knexProductos.from('productos').where('id', '=', id).del()
+        .then (()=>{
+            console.log('Fila borrada!');
+        })
+        .catch(e=>{
+            next(e)
+            console.log('Error en Insert:', e);
+        })
+    res.json(producto);
 });
 
