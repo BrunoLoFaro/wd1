@@ -11,7 +11,12 @@ const io = new Server(http);
 import validator from 'email-validator'
 import moment from 'moment'
 
-const PORT = process.env.PORT;
+//import options, * as options2 from './options/SQLite3.js';
+import options from './options/SQLite3.js';
+import knex_ from 'knex';
+const knex = knex_(options)
+
+const PORT = 8080//process.env.PORT
 const router = express.Router();
 const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT))
         
