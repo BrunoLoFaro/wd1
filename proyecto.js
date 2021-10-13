@@ -22,49 +22,55 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT))
         
 let archMensajes = new Archivo("mensajes.txt");
 
-const articulosA = [
-    {nombre: 'Celular', codigo: 'CELU', precio: 12499.99, stock: 5000},
-    {nombre: 'Televisión', codigo: 'TV', precio: 27999.99, stock: 300},
-    {nombre: 'Notebook', codigo: 'NOTE', precio: 48200.12, stock: 1500},
-    {nombre: 'Tablet', codigo: 'TAB', precio: 3000.00, stock: 200},
-    {nombre: 'Mouse', codigo: 'RATON', precio: 1009.50, stock: 13200}
+const vMensajes = [ 
+	{
+		"mail": "lofarobruno@gmail.com", 
+		"mensaje": "Por acá se envian mensajes", 
+		"tiempo": "28/09/2021, 17:09:20 pm", 
+		"id": 1
+	}, 
+	{
+		"mail": "lofarobruno@gmail.com", 
+		"mensaje": "Para enviar uno, hay que completar el campo de mail", 
+		"tiempo": "28/09/2021, 17:09:30 pm", 
+        "id": 2
+	} 
 ];
 
 
 (async ()=>{
     try {
-        await knex.schema.dropTableIfExists('articulos');
+        /*await knex.schema.dropTableIfExists('mensajes');
         console.log('Tabla borrada...');
 
-        await knex.schema.createTable('articulos', table => {
-                table.increments('id'),
-                table.string('nombre'),
-                table.string('codigo'),
-                table.float('precio'),
-                table.integer('stock')
+        await knex.schema.createTable('mensajes', table => {
+                table.string('mail'),
+                table.string('mensaje'),
+                table.string('tiempo'),
+                table.increments('id')
             });
-        console.log('Tabla de articulos creada...');
+        console.log('Tabla de mensajes creada...');
 
-        await knex('articulos').insert(articulosA);
-        console.log('Articulos insertados...');
+        await knex('mensajes').insert(vMensajes);
+        console.log('Mensajes insertados...');*/
 
-        let articulos = await knex.from('articulos').select('*');
-        console.log('Listando articulos...');
-        for (let articulo of articulos) {
-            console.log(`${articulo['id']}. ${articulo['codigo']} - ${articulo['nombre']}. Precio: $${articulo['precio']} - Stock: ${articulo['stock']}`);
+        let mensajes = await knex.from('mensajes').select('*');
+        console.log('Listando mensajes...');
+        for (let mensaje of mensajes) {
+            console.log(`${mensaje['id']}. ${mensaje['tiempo']} - ${mensaje['mensaje']}. Precio: $${mensaje['mail']}`);
         }
 
-        await knex.from('articulos').where('id', '=', 3).del();
-        console.log('Articulo borrado...');
+        /*await knex.from('articulos').where('id', '=', 3).del();
+        console.log('Articulo borrado...');*/
 
-        await knex.from('articulos').where('id', '=', 2).update({stock: 0});
-        console.log('Articulo actualizado...');
+        /*await knex.from('articulos').where('id', '=', 2).update({stock: 0});
+        console.log('Articulo actualizado...');*/
 
-        articulos = await knex.from('articulos').select('*');
+       /* mensajes = await knex.from('articulos').select('*');
         console.log('Listando articulos finales...');
-        for (let articulo of articulos) {
-            console.log(`${articulo['id']}. ${articulo['codigo']} - ${articulo['nombre']}. Precio: $${articulo['precio']} - Stock: ${articulo['stock']}`);
-        }
+        for (let mensaje of mensajes) {
+            console.log(`${mensaje['id']}. ${mensaje['codigo']} - ${mensaje['nombre']}. Precio: $${mensaje['precio']} - Stock: ${mensaje['stock']}`);
+        }*/
         knex.destroy();
     }
 
