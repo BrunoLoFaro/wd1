@@ -39,51 +39,26 @@ const vMensajes = [
 
 
 (async ()=>{
-    try {
-        /*await knex.schema.dropTableIfExists('mensajes');
-        console.log('Tabla borrada...');
-
-        await knex.schema.createTable('mensajes', table => {
-                table.string('mail'),
-                table.string('mensaje'),
-                table.string('tiempo'),
-                table.increments('id')
-            });
-        console.log('Tabla de mensajes creada...');
-
-        await knex('mensajes').insert(vMensajes);
-        console.log('Mensajes insertados...');*/
-
-        let mensajes = await knex.from('mensajes').select('*');
-        console.log('Listando mensajes...');
-        for (let mensaje of mensajes) {
-            console.log(`${mensaje['id']}. ${mensaje['tiempo']} - ${mensaje['mensaje']}. Precio: $${mensaje['mail']}`);
-        }
-
-        /*await knex.from('articulos').where('id', '=', 3).del();
-        console.log('Articulo borrado...');*/
-
-        /*await knex.from('articulos').where('id', '=', 2).update({stock: 0});
-        console.log('Articulo actualizado...');*/
-
-       /* mensajes = await knex.from('articulos').select('*');
-        console.log('Listando articulos finales...');
-        for (let mensaje of mensajes) {
-            console.log(`${mensaje['id']}. ${mensaje['codigo']} - ${mensaje['nombre']}. Precio: $${mensaje['precio']} - Stock: ${mensaje['stock']}`);
-        }*/
-        knex.destroy();
-    }
-
-    catch(e) {
-        console.log('Error en proceso:', e);
-        knex.destroy();
-    }
+    await knex.schema.hasTable('mensajes')
+    .then(()=>console.log("table already exists"))
+    .catch(()=>{
+        knex.schema.createTable('mensajes', table => {
+            table.string('mail'),
+            table.string('mensaje'),
+            table.string('tiempo'),
+            table.increments('id')
+            console.log('Tabla de mensajes creada...');
+        }).then(()=>{
+            knex('mensajes').insert(vMensajes);
+            console.log('Mensajes insertados...');
+        })      
+    })
 })();
 
 //-----websocket triggers-----
     io.on('connection', (socket)=> {
         console.log(`conectado, cliente: ${socket}`)
-        archMensajes.leer().then((mensajes_guardados)=>{
+        knex.from('mensajes').select('*').then((mensajes_guardados)=>{
             io.sockets.emit('mensajes', mensajes_guardados);
         })
 
