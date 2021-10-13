@@ -8,7 +8,7 @@ import { Server } from "socket.io";
 const io = new Server(http);
 import validator from 'email-validator'
 import moment from 'moment'
-
+import {vProductos, vMensajes} from './lotes.js'
 import {optionsMensajes, optionsProductos} from './options/SQLite3.js';
 import knex from 'knex';
 import { nextTick } from 'process';
@@ -17,45 +17,7 @@ let knexProductos = knex(optionsProductos)
 
 const PORT = 8080//process.env.PORT
 const router = express.Router();
-const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT))
-
-
-const vMensajes = [ 
-	{
-		"mail": "lofarobruno@gmail.com", 
-		"mensaje": "Por acá se envian mensajes", 
-		"tiempo": "28/09/2021, 17:09:20 pm", 
-		"id": 1
-	}, 
-	{
-		"mail": "lofarobruno@gmail.com", 
-		"mensaje": "Para enviar uno, hay que completar el campo de mail", 
-		"tiempo": "28/09/2021, 17:09:30 pm", 
-        "id": 2
-	} 
-];
-
-let vProductos =
-[
-	{
-		title: "Kendall - analisis y diseño de sistemas",
-		price: 124,
-		thumbnail: "http://2.bp.blogspot.com/_n0EM_zLV8hI/SzVkcaB9RxI/AAAAAAAAEzw/Hv37qoPvy7s/s400/Kendall+%26+Kendall+-+Analisis+y+dise%C3%B1o+de+sistemas+-+box.jpg",
-		id: 1
-	},
-	{
-		title: "Dan Brown - La fortaleza digital",
-		price: 434,
-		thumbnail: "https://bibliotecaquijote.files.wordpress.com/2012/02/la-fortaleza-digital.jpg",
-		id: 2
-	},
-	{
-		title: "Raymond Chang - Química",
-		price: 72,
-		thumbnail: "https://contentv2.tap-commerce.com/cover/large/9786071513939_1.jpg?id_com=1113",
-		id: 3
-	}
-];
+const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
 
 (async ()=>{
     await knexMensajes.schema.hasTable('mensajes')
@@ -95,14 +57,10 @@ let vProductos =
         console.log(`conectado, cliente: ${socket}`)
         knexMensajes.from('mensajes').select('*').then((mensajes_guardados)=>{
             io.sockets.emit('mensajes', mensajes_guardados);
-        }).then(()=>{
-            //knexMensajes.destroy()
         })
         knexProductos.from('productos').select('*').then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
-            //console.log(productos_guardados)
-        }).then(()=>{
-            //knexProductos.destroy()
+
         })
 
         socket.on('producto',data=>{
@@ -113,16 +71,18 @@ let vProductos =
         socket.on('nuevo-mensaje', (data)=>{
             let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
             data.tiempo = tiempo
-            archMensajes.guardar(data).then(()=>{
-                archMensajes.leer().then((vMensajes)=>{
-                io.sockets.emit('mensajes', vMensajes);
+            knexMensajes('mensajes').insert(data)
+            .then (()=>{
+                console.log('Fila insertada!');
+                knexMensajes.from('mensajes').select('*').then((mensajes_guardados)=>{
+                    io.sockets.emit('mensajes', mensajes_guardados);
                 })
-            });
+            })
+            .catch(e=>{
+                //next(e)
+                console.log('Error en Insert:', e);
+            })
         })
-        socket.on('vaciar',data=>{
-            listaProd.empty();
-            socket.emit('productos',lista)       
-        })       
     })
     
 //-----handlebar config-----
