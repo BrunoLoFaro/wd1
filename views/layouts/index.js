@@ -3,10 +3,11 @@ var socket = io();
 //funciones referentes a webSockets
 function enviar(valor) {
     let prod={
-        title:document.getElementById('title').value,
-        price:document.getElementById('price').value,
-        thumbnail:document.getElementById('thumbnail').value
+        nombre:document.getElementById('titulo').value,
+        precio:document.getElementById('precio').value,
+        foto:document.getElementById('foto').value
     };
+    console.log(prod)
     socket.emit('producto', prod);
     return false
 }
@@ -17,6 +18,7 @@ socket.on('producto', (data) => {
 
 socket.on('productos', (data) => {
     //limpio los elementos de tabla, para evitar duplicados al recargar
+    console.log(data)
     let tbody = document.getElementsByTagName('tbody')[0];
     tbody.innerHTML = '';
     for(let e of data){
@@ -53,13 +55,13 @@ function createTable(e){
                 let campoPrecio = document.createElement('th');    
                 let campoImagen = document.createElement('th');   
                     contenedor.className='col-md-4'
-                    img.src=e.thumbnail
+                    img.src=e.foto
                     img.width=100
                     fila.id='addr0'   
                     campoNombre.classList.add("text-center");
                     campoPrecio.classList.add("text-center");
-                    campoNombre.innerHTML = e.title
-                    campoPrecio.innerHTML = e.price+"$"
+                    campoNombre.innerHTML = e.nombre
+                    campoPrecio.innerHTML = e.precio+"$"
                 contenedor.append(img)
                 campoImagen.append(contenedor)
                 fila.append(campoNombre)

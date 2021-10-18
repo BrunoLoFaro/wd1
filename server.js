@@ -9,7 +9,8 @@ import { Server } from "socket.io";
 const io = new Server(http);
 import moment from 'moment'
 import mongoose from 'mongoose'
-import * as model from './models/producto.model.js'
+import * as productoModel from './models/producto.model.js'
+import * as mensajeModel from './models/mensaje.model.js'
 
 CRUD();
 
@@ -37,17 +38,28 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
 
         console.log(`conectado, cliente: ${socket}`)
 
-        model.productos.find({}).then((mensajes_guardados)=>{
+        mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
             io.sockets.emit('mensajes', mensajes_guardados);
         })
-        model.productos.find({}).then((productos_guardados)=>{
+        productoModel.productos.find({}).then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
         })
 
         socket.on('producto',data=>{
-                const productoSaveModel = new model.productos(prodEj)
+            console.log(data)
+            let prod={
+                id: 0,
+                timestamp: "",
+                nombre: data.nombre,
+                descripcion: "",
+                codigo: "",
+                foto: data.foto,
+                precio: data.precio
+            }
+                const productoSaveModel = new productoModel.productos(prod)
                 productoSaveModel.save()
                 .then(()=>{
+                    console.log(prod)
                     io.sockets.emit('producto',data)
                 })
         })
@@ -55,14 +67,12 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
         socket.on('nuevo-mensaje', (data)=>{
             let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
             data.tiempo = tiempo
-            const productoSaveModel = new model.productos(prodEj)
-            productoSaveModel.save()
+            const mensajeSaveModel = new mensajeModel.productos(prodEj)
+            mensajeSaveModel.save()
             .then ((mensajes_guardados)=>{
                 console.log('Fila insertada!');
-                knexMensajes.from('mensajes').select('*').then((mensajes_guardados)=>{
-                    io.sockets.emit('mensajes', mensajes_guardados);
+                io.sockets.emit('mensajes', mensajes_guardados);
                 })
-            })
             .catch(e=>{
                 //next(e)
                 console.log('Error en Insert:', e);

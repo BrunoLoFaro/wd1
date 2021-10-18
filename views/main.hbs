@@ -5,13 +5,13 @@
 			right: 0px;
 		}
 	</style>
-    <h1>Venta de Libros</h1>
-    <!--<form onsubmit="return enviar(this)" style="margin:20px;">
-        <input type="text" id="title" placeholder="nombre">
-        <input type="text" id="price" placeholder="precio">
-        <input type="text" id="thumbnail" placeholder="imagen(url)">
+    <h1>Venta de productos</h1>
+    <form onsubmit="return enviar(this)" style="margin:20px;">
+        <input type="text" id="titulo" placeholder="nombre">
+        <input type="text" id="precio" placeholder="precio">
+        <input type="text" id="foto" placeholder="imagen(url)">
 		<input type="submit" value="guardar">
-	</form>-->
+	</form>
 <div ></div>
 
 <div class="container">
@@ -35,14 +35,14 @@
                     {{#each productos}}
                     <tr id='addr0'>
 						<th class="text-center">
-							{{this.title}}
+							{{this.nombre}}
 						</th>
                         <th class="text-center">
-							{{this.price}}$
+							{{this.precio}}$
 						</th>
 						<th>
 						<div class="col-md-4">
-							<img src="{{this.thumbnail}} " width="20%">
+							<img src="{{this.foto}} " width="20%">
 						</th>
                     {{/each}}
 					</tr>
