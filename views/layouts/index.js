@@ -12,6 +12,13 @@ function enviar(valor) {
     return false
 }
 
+function eliminar(elem, string){
+    let nombre=elem.innerHTML
+    console.log(elem.innerHTML)
+    socket.emit(string, nombre);
+    return false
+}
+
 socket.on('producto', (data) => {
     createTable(data);
 })
@@ -38,6 +45,7 @@ function enviarMensaje(e){
         mail: document.getElementById('mail').value,
         mensaje: document.getElementById('texto').value,
     }
+    console.log(envio)
     if(ValidateEmail(envio.mail))
     socket.emit('nuevo-mensaje', envio);
     return false;
@@ -67,7 +75,9 @@ function createTable(e){
                 fila.append(campoNombre)
                 fila.append(campoPrecio)
             fila.append(campoImagen)
-        tabla.append(fila)
+            //fila.onclick = eliminar(this);
+            campoNombre.setAttribute("onclick","eliminar(this,'productoElim');");
+            tabla.append(fila)
 }
 
 function ValidateEmail(mail) 
@@ -84,15 +94,9 @@ let render = (data) => {
     let html = data.map((e,i)=>`
         <div>
             <strong style="color:blue">${e.mail}</strong>
-            <a style="color:brown" >${e.tiempo}</a>
+            <a style="color:brown" onCLick=eliminar(this,'mensajeElim');>${e.tiempo}</a>
             <em style="color:green">${e.mensaje}</em>
         </div>
     `).join(' ');
     document.getElementById("mensajes").innerHTML = html;
-}
-
-//boton para vaciar la tabla
-function vaciar(){
-    socket.emit('vaciar', "");
-    console.log('vacio')
 }

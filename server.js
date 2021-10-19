@@ -26,7 +26,8 @@ async function CRUD (){
         console.log('Conectado a la base de datos...');
         }
     catch(error) {
-        throw `Error: ${error}`;
+        console.log("db not running")
+        ///throw `Error: ${error}`;
     }
 }
 
@@ -63,23 +64,52 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
                     io.sockets.emit('producto',data)
                 })
         })
-
+        socket.on('productoElim',nombre=>{
+            productoModel.productos.deleteMany({nombre:nombre})
+                .then((e)=>{
+                    console.log(e)
+                    productoModel.productos.find({}).then((productos_guardados)=>{
+                        //console.log(productos_guardados)
+                    io.sockets.emit('productos', productos_guardados);
+                })
+            })
+            .catch((e)=>{
+                console.log(e)
+            })
+        })
+        socket.on('mensajeElim',tiempo=>{
+            mensajeModel.mensajes.deleteMany({tiempo:tiempo})
+                .then((e)=>{
+                    mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
+                    io.sockets.emit('mensajes', mensajes_guardados);
+                })
+            })
+            .catch((e)=>{
+                console.log(e)
+            })
+        })
         socket.on('nuevo-mensaje', (data)=>{
             let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
-            data.tiempo = tiempo
-            const mensajeSaveModel = new mensajeModel.productos(prodEj)
+            let mensaje={
+                id: 1,
+                mail: data.mail,
+                mensaje: data.mensaje,
+                tiempo: tiempo
+            }
+            console.log(mensaje)
+            const mensajeSaveModel = new mensajeModel.mensajes(mensaje)
             mensajeSaveModel.save()
-            .then ((mensajes_guardados)=>{
-                console.log('Fila insertada!');
+            .then((e)=>{
+                mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
                 io.sockets.emit('mensajes', mensajes_guardados);
-                })
+            })
             .catch(e=>{
                 //next(e)
                 console.log('Error en Insert:', e);
             })
         })
     })
-    
+})
 //-----handlebar config-----
 server.on('error', error=>console.log('Error en servidor', error));
 
