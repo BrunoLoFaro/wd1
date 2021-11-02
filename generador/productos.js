@@ -2,12 +2,8 @@ import faker from 'faker'
 
 faker.locale = 'es';
 
-const get = () => ({
+export const generador = () => ({
     nombre: faker.commerce.productName(),
-    precio: faker.commerce.price(),
-    foto: faker.image.imageUrl()
+    foto: faker.image.business(),
+    precio: faker.image.technics()
 });
-
-module.exports = {
-    get
-}

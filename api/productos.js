@@ -1,27 +1,26 @@
-import generador from'../generador/usuarios'
-import util from '../util'
+import {generador} from'../generador/productos.js'
+import {nextId,getFecha,getIndex} from '../util.js'
  
-import usuarios from '../model/usuarios'
+//import {productos} from '../models/productos.js'
 
-export const generar = (req, res) => {
-    let cant = req.params.cant || 50;
-    usuarios = [];
+export let generar = async function (){
+    let cant = 5 /*req.params.cant || 50;*/
+    let productos = [];
     for (let i=0; i<cant; i++){
-        let usuario = generador.get();
-        usuario.id = i + 1;
-        usuario.fecha = util.getFecha();
-        usuarios.push(usuario);
+        let producto = generador();
+        producto.id = i + 1;
+        productos.push(producto);
     }
-    res.send(usuarios);
+    return productos;
 }
-
+/*
 export const get = (req, res) => {
     let id = Number(req.params.id);
     if (id) {
-        let index = util.getIndex(id, usuarios);
-        let usuario = usuarios[index];
-        res.send(usuario);
+        let index = util.getIndex(id, productos);
+        let producto = productos[index];
+        res.send(producto);
     } else {
-        res.send(usuarios);
+        res.send(productos);
     }
-}
+}*/

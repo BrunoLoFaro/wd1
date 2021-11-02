@@ -1,4 +1,5 @@
 import {Router} from "express"
+import {generar} from "../api/productos.js"
 
 import {
     getProducto,
@@ -19,9 +20,12 @@ productosRouter
 
 export const productosTestRouter = Router()
 
-productosTestRouter
-    .get("/listar", getProducto)
-    .get("/listar/:id", getProductoById)
-    .post("/agregar", postProducto)
-    .put("/actualizar", putProducto)
-    .delete("/borrar/:id", deleteProducto);
+export function set(){
+    productosTestRouter
+        .get("/listar", generar)
+        /*.get("/listar/:id", getProductoById)
+        .post("/agregar", postProducto)
+        .put("/actualizar", putProducto)
+        .delete("/borrar/:id", deleteProducto);*/
+        return Router
+    }

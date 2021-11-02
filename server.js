@@ -1,8 +1,8 @@
-import { productosRouter } from './routes/productos.routes.js';
+import { productosRouter, set } from './routes/productos.routes.js';
 //import { handleError } from './middleware/errorHandler.js';
 import express from 'express';
 const app = express();
-import {generador} from './generador/productos.js'
+//import {generador} from './generador/productos.js'
 import handlebars from 'express-handlebars'
 import http1 from 'http'
 const http = http1.Server(app)
@@ -12,6 +12,7 @@ import moment from 'moment'
 import mongoose from 'mongoose'
 import * as productoModel from './models/producto.model.js'
 import * as mensajeModel from './models/mensaje.model.js'
+import {generar} from "./api/productos.js"
 
 CRUD();
 
@@ -40,7 +41,7 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
 
         console.log(`conectado, cliente: ${socket}`)
 
-        let generarProductos = ()=>{
+        /*let generarProductos = ()=>{
             let productos = [];
             let cant = 5;
             for (let i=0; i<cant; i++) {
@@ -48,9 +49,9 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
                 usuario.id = i + 1;
                 productos.push(producto);
             }
-        }
+        }*/
 
-        let generarMensajes = ()=>{
+        /*let generarMensajes = ()=>{
             let productos = [];
             let cant = 5;
             for (let i=0; i<cant; i++) {
@@ -58,11 +59,11 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
                 usuario.id = i + 1;
                 productos.push(producto);
             }
-        }
-        generarMensajes().then((mensajes_guardados)=>{
+        }*/
+       /*generarMensajes().then((mensajes_guardados)=>{
             io.sockets.emit('mensajes', mensajes_guardados);
-        })
-        generarProductos().then((productos_guardados)=>{
+        })*/
+        generar().then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
         })
 
@@ -148,7 +149,7 @@ app.set('views', 'views'); // especifica el directorio de vistas
 app.set('view engine', 'hbs'); // registra el motor de plantillas
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));     
-
+app.use('/api',set());
 //-----comportamiento de la pagina a los metodos http-----
 app.get('/', (req,res)=>{
 var scripts = '/layouts/index.js';
