@@ -14,8 +14,7 @@ import * as productoModel from './models/producto.model.js'
 import * as mensajeModel from './models/mensaje.model.js'
 import {generar} from "./api/productos.js"
 
-CRUD();
-
+/** 
 async function CRUD (){
     try {
         const URI = 'mongodb://localhost:27017/ecommerce';
@@ -31,7 +30,9 @@ async function CRUD (){
         console.log("db not running")
         ///throw `Error: ${error}`;
     }
-}
+}**/
+
+//CRUD();
 
 const PORT = 8080//process.env.PORT
 const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
@@ -41,16 +42,6 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
 
         console.log(`conectado, cliente: ${socket}`)
 
-        /*let generarProductos = ()=>{
-            let productos = [];
-            let cant = 5;
-            for (let i=0; i<cant; i++) {
-                let producto = generador.get();
-                usuario.id = i + 1;
-                productos.push(producto);
-            }
-        }*/
-
         /*let generarMensajes = ()=>{
             let productos = [];
             let cant = 5;
@@ -59,10 +50,11 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
                 usuario.id = i + 1;
                 productos.push(producto);
             }
-        }*/
-       /*generarMensajes().then((mensajes_guardados)=>{
+        }
+       generarMensajes().then((mensajes_guardados)=>{
             io.sockets.emit('mensajes', mensajes_guardados);
         })*/
+        
         generar().then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
         })
@@ -150,13 +142,14 @@ app.set('view engine', 'hbs'); // registra el motor de plantillas
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));     
 app.use('/api',set());
-//-----comportamiento de la pagina a los metodos http-----
+
+
 app.get('/', (req,res)=>{
 var scripts = '/layouts/index.js';
 res.render('main',{script: scripts});
 })
 
-app.get('/test', (req,res)=>{
+app.get('/vista-test', (req,res)=>{
     var scripts = '/layouts/index.js';
     res.render('main',{script: scripts});
 })
