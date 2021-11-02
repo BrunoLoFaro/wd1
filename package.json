@@ -5,9 +5,10 @@
     "email-validator": "^2.0.4",
     "express": "^4.17.1",
     "express-handlebars": "^5.3.4",
+    "faker": "^5.5.3",
     "knex": "^0.95.11",
     "moment": "^2.29.1",
-    "mongoose": "^6.0.11",
+    "mongoose": "^6.0.12",
     "mysql": "^2.18.1",
     "socket.io": "^4.2.0",
     "sqlite3": "^5.0.2"

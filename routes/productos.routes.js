@@ -16,3 +16,12 @@ productosRouter
     .post("/agregar", postProducto)
     .put("/actualizar", putProducto)
     .delete("/borrar/:id", deleteProducto);
+
+export const productosTestRouter = Router()
+
+productosTestRouter
+    .get("/listar", getProducto)
+    .get("/listar/:id", getProductoById)
+    .post("/agregar", postProducto)
+    .put("/actualizar", putProducto)
+    .delete("/borrar/:id", deleteProducto);

@@ -2,6 +2,7 @@ import { productosRouter } from './routes/productos.routes.js';
 //import { handleError } from './middleware/errorHandler.js';
 import express from 'express';
 const app = express();
+import {generador} from './generador/productos.js'
 import handlebars from 'express-handlebars'
 import http1 from 'http'
 const http = http1.Server(app)
@@ -39,10 +40,29 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
 
         console.log(`conectado, cliente: ${socket}`)
 
-        mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
+        let generarProductos = ()=>{
+            let productos = [];
+            let cant = 5;
+            for (let i=0; i<cant; i++) {
+                let producto = generador.get();
+                usuario.id = i + 1;
+                productos.push(producto);
+            }
+        }
+
+        let generarMensajes = ()=>{
+            let productos = [];
+            let cant = 5;
+            for (let i=0; i<cant; i++) {
+                let producto = generador.get();
+                usuario.id = i + 1;
+                productos.push(producto);
+            }
+        }
+        generarMensajes().then((mensajes_guardados)=>{
             io.sockets.emit('mensajes', mensajes_guardados);
         })
-        productoModel.productos.find({}).then((productos_guardados)=>{
+        generarProductos().then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
         })
 
@@ -133,4 +153,9 @@ app.use(express.urlencoded({extended: true}));
 app.get('/', (req,res)=>{
 var scripts = '/layouts/index.js';
 res.render('main',{script: scripts});
+})
+
+app.get('/test', (req,res)=>{
+    var scripts = '/layouts/index.js';
+    res.render('main',{script: scripts});
 })
