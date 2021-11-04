@@ -42,15 +42,18 @@ socket.on('mensajes', (data)=>{
 
 function enviarMensaje(e){
     let envio = {
-        mail: document.getElementById('mail').value,
-        mensaje: document.getElementById('texto').value,
-    }
-    console.log(envio)
-    if(ValidateEmail(envio.mail))
+        id:document.getElementById('id').value,
+        nombre:document.getElementById('nombre').value,
+        apellido:document.getElementById('apellido').value,
+        edad:document.getElementById('edad').value,
+        alias:document.getElementById('alias').value,
+        avatar:document.getElementById('avatar').value,
+        text:document.getElementById('text').value
+    };
+    if(ValidateEmail(envio.id))
     socket.emit('nuevo-mensaje', envio);
-    return false;
+    return false
 }
-
 
 //funciones que manipulan el DOM
 
@@ -91,12 +94,13 @@ function ValidateEmail(mail)
 }
 
 let render = (data) => {
-    let html = data.map((e,i)=>`
+    console.log(util.inspect(data, {showHidden: false, depth: null, colors: true}))
+    /*let html = data.map((e,i)=>`
         <div>
-            <strong style="color:blue">${e.mail}</strong>
-            <a style="color:brown" onCLick=eliminar(this,'mensajeElim');>${e.tiempo}</a>
-            <em style="color:green">${e.mensaje}</em>
+            <strong style="color:blue">${e._id}</strong>
+            <strong style="color:blue">${e._id}</strong>
+            <a style="color:brown" onCLick=eliminar(this,'mensajeElim');>${e.text}</a>
         </div>
-    `).join(' ');
+    `).join(' ');*/
     document.getElementById("mensajes").innerHTML = html;
 }

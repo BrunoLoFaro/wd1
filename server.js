@@ -12,9 +12,31 @@ import moment from 'moment'
 import mongoose from 'mongoose'
 import * as productoModel from './models/producto.model.js'
 import * as mensajeModel from './models/mensaje.model.js'
-import {generar} from "./api/productos.js"
+import {genProd, genMsj} from "./api/productos.js"
+import normalizr from 'normalizr'
+import util from 'util'
 
-/** 
+const normalize = normalizr.normalize
+const schema = normalizr.schema;
+/* 
+author:{
+    id: 
+    nombre: 
+    apellido:
+    edad:
+    alias:
+    avatar:
+},
+text:''
+*/
+
+const autor = new schema.Entity('autores')
+const texto = new schema.Entity('textos')
+const mensajes = new schema.Entity('mensajes',{
+    autor: autor,
+    texto: texto
+})
+
 async function CRUD (){
     try {
         const URI = 'mongodb://localhost:27017/ecommerce';
@@ -30,9 +52,9 @@ async function CRUD (){
         console.log("db not running")
         ///throw `Error: ${error}`;
     }
-}**/
+}
 
-//CRUD();
+CRUD();
 
 const PORT = 8080//process.env.PORT
 const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
@@ -42,20 +64,22 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
 
         console.log(`conectado, cliente: ${socket}`)
 
-        /*let generarMensajes = ()=>{
-            let productos = [];
-            let cant = 5;
-            for (let i=0; i<cant; i++) {
-                let producto = generador.get();
-                usuario.id = i + 1;
-                productos.push(producto);
-            }
-        }
-       generarMensajes().then((mensajes_guardados)=>{
+        mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
             io.sockets.emit('mensajes', mensajes_guardados);
-        })*/
+            console.log(util.inspect(mensajes_guardados,false,12,true))
+            console.log(JSON.stringify(mensajes_guardados).length)
+            const normalizado = normalize(mensajes_guardados,mensajes)
+            console.log(util.inspect(normalizado,false,12,true))
+            console.log(JSON.stringify(normalizado).length + 'normalizado')
+        })
+        genMsj.then((msjs_guardados)=>{
+            io.sockets.emit('mensajes', msjs_guardados)
+        })
+        /**productoModel.productos.find({}).then((productos_guardados)=>{
+            io.sockets.emit('productos', productos_guardados);
+        })**/
         
-        generar().then((productos_guardados)=>{
+        genProd.then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
         })
 
@@ -102,12 +126,18 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
             })
         })
         socket.on('nuevo-mensaje', (data)=>{
-            let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
+            //let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
+            let autor = {
+                id:data.id,
+                nombre:data.nombre,
+                apellido:data.apellido,
+                edad:data.edad,
+                alias:data.alias,
+                avatar:data.avatar
+            }
             let mensaje={
-                id: 1,
-                mail: data.mail,
-                mensaje: data.mensaje,
-                tiempo: tiempo
+                autor:autor,
+                text:data.text
             }
             console.log(mensaje)
             const mensajeSaveModel = new mensajeModel.mensajes(mensaje)
@@ -123,6 +153,7 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
         })
     })
 })
+
 //-----handlebar config-----
 server.on('error', error=>console.log('Error en servidor', error));
 
