@@ -10,6 +10,7 @@
     "moment": "^2.29.1",
     "mongoose": "^6.0.12",
     "mysql": "^2.18.1",
+    "normalizr": "^3.6.1",
     "socket.io": "^4.2.0",
     "sqlite3": "^5.0.2"
   },

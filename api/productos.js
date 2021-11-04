@@ -1,19 +1,20 @@
-import {generador} from'../generador/productos.js'
+import {generadorProd, generadorMensaje} from'../generador/productos.js'
 import {nextId,getFecha,getIndex} from '../util.js'
  
 //import {productos} from '../models/productos.js'
 
-export let generar = async function (req){
-    let cant = 10 /*req.params.cant || 50;*/
-    let productos = [];
+export async function generar (req=10, generador){
+    let cant = req /*req.params.cant || 50;*/
+    let vec = [];
     for (let i=0; i<cant; i++){
-        let producto = generador();
-        producto.id = i + 1;
-        productos.push(producto);
+        let elem = generador();
+        elem.id = i + 1;
+        vec.push(elem);
     }
-    return productos;
+    return vec;
 }
-
+export let genProd = generar(10, generadorProd)
+export let genMsj = generar(10, generadorMensaje)
 /*
 var mensaje = {
     author: {
