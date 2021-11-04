@@ -34,9 +34,10 @@ socket.on('productos', (data) => {
 })
 
 socket.on('mensajes', (data)=>{
+    console.log("recibí")
     let div = document.getElementsByTagName('div')[0];
     div.innerHTML = '';
-    //console.log(dat)
+    console.log(data)
     render(data);
 });
 
@@ -94,13 +95,12 @@ function ValidateEmail(mail)
 }
 
 let render = (data) => {
-    console.log(util.inspect(data, {showHidden: false, depth: null, colors: true}))
-    /*let html = data.map((e,i)=>`
+    let html = data.map((e,i)=>`
         <div>
-            <strong style="color:blue">${e._id}</strong>
-            <strong style="color:blue">${e._id}</strong>
-            <a style="color:brown" onCLick=eliminar(this,'mensajeElim');>${e.text}</a>
+            <img src=${e.author.avatar} alt="Avatar" style="width:4%; border-radius: 50%;;></img>
+            <strong style="color:blue">${e.author.id}</strong>
+            <br><a style="color:brown; margin-left:5%;" onCLick=eliminar(this,'mensajeElim');>${e.text}</a>
         </div>
-    `).join(' ');*/
+    `).join(' ');
     document.getElementById("mensajes").innerHTML = html;
 }

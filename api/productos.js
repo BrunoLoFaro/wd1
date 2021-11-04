@@ -15,19 +15,7 @@ export async function generar (req=10, generador){
 }
 export let genProd = generar(10, generadorProd)
 export let genMsj = generar(10, generadorMensaje)
-/*
-var mensaje = {
-    author: {
-        id:'mail del usuario',
-        nombre:'nombre del usuario',
-        apellido:'apelldio del usuario',
-        edad:'edad del usuario',
-        alias:'alisa del usuario',
-        avatar:'url avatar (foto, logo) del usuario',
-    },
-    text: 'mensaje del usuario'
-}
-*/
+
 /*
 export const get = (req, res) => {
     let id = Number(req.params.id);

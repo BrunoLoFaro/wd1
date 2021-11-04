@@ -16,26 +16,18 @@ import {genProd, genMsj} from "./api/productos.js"
 import normalizr from 'normalizr'
 import util from 'util'
 
+/*
 const normalize = normalizr.normalize
 const schema = normalizr.schema;
-/* 
-author:{
-    id: 
-    nombre: 
-    apellido:
-    edad:
-    alias:
-    avatar:
-},
-text:''
-*/
-
 const autor = new schema.Entity('autores')
 const texto = new schema.Entity('textos')
 const mensajes = new schema.Entity('mensajes',{
     autor: autor,
     texto: texto
 })
+*/
+
+CRUD();
 
 async function CRUD (){
     try {
@@ -54,8 +46,6 @@ async function CRUD (){
     }
 }
 
-CRUD();
-
 const PORT = 8080//process.env.PORT
 const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
 
@@ -63,18 +53,32 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
     io.on('connection', (socket)=> {
 
         console.log(`conectado, cliente: ${socket}`)
-
+       /
         mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
+            console.log(mensajes_guardados)
             io.sockets.emit('mensajes', mensajes_guardados);
-            console.log(util.inspect(mensajes_guardados,false,12,true))
+            /*console.log(util.inspect(mensajes_guardados,false,12,true))
             console.log(JSON.stringify(mensajes_guardados).length)
             const normalizado = normalize(mensajes_guardados,mensajes)
             console.log(util.inspect(normalizado,false,12,true))
-            console.log(JSON.stringify(normalizado).length + 'normalizado')
+            console.log(JSON.stringify(normalizado).length + 'normalizado')*/
         })
-        genMsj.then((msjs_guardados)=>{
-            io.sockets.emit('mensajes', msjs_guardados)
-        })
+        
+        
+        /*genMsj.then((msjs_guardados)=>{
+            for(let e of msjs_guardados)
+            {
+                console.log(e)
+                const mensajeSaveModel = new mensajeModel.mensajes(e)
+                mensajeSaveModel.save()
+                .then(()=>{
+                    console.log(`${e} guardado`)
+                })
+            }                
+
+            //io.sockets.emit('mensajes', msjs_guardados)
+        })*/
+        
         /**productoModel.productos.find({}).then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
         })**/

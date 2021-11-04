@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 import {autorschema} from './autor.model.js'
 const mensajesCollection = 'mensajes'
 const mensajeschema = new mongoose.Schema({
-    autor: autorschema,
+    author: autorschema,
     text: {type:String, require: true, max:100}
 })
 
