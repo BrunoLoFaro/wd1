@@ -1,23 +1,6 @@
-var socket = io();
+//socket io definido en script embebido en main.hbs 
 
 //funciones referentes a webSockets
-function enviar(valor) {
-    let prod={
-        nombre:document.getElementById('titulo').value,
-        precio:document.getElementById('precio').value,
-        foto:document.getElementById('foto').value
-    };
-    console.log(prod)
-    socket.emit('producto', prod);
-    return false
-}
-
-function eliminar(elem, string){
-    let nombre=elem.innerHTML
-    console.log(elem.innerHTML)
-    socket.emit(string, nombre);
-    return false
-}
 
 socket.on('producto', (data) => {
     createTable(data);
@@ -40,21 +23,6 @@ socket.on('mensajes', (data)=>{
     console.log(data)
     render(data);
 });
-
-function enviarMensaje(e){
-    let envio = {
-        id:document.getElementById('id').value,
-        nombre:document.getElementById('nombre').value,
-        apellido:document.getElementById('apellido').value,
-        edad:document.getElementById('edad').value,
-        alias:document.getElementById('alias').value,
-        avatar:document.getElementById('avatar').value,
-        text:document.getElementById('text').value
-    };
-    if(ValidateEmail(envio.id))
-    socket.emit('nuevo-mensaje', envio);
-    return false
-}
 
 //funciones que manipulan el DOM
 
@@ -99,6 +67,7 @@ let render = (data) => {
         <div>
             <img src=${e.author.avatar} alt="Avatar" style="width:4%; border-radius: 50%;;></img>
             <strong style="color:blue">${e.author.id}</strong>
+            <a style="color:green;" onCLick=eliminar(this,'mensajeElim');>${e.creadoEn}</a>
             <br><a style="color:brown; margin-left:5%;" onCLick=eliminar(this,'mensajeElim');>${e.text}</a>
         </div>
     `).join(' ');

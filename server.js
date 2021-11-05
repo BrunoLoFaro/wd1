@@ -13,19 +13,32 @@ import mongoose from 'mongoose'
 import * as productoModel from './models/producto.model.js'
 import * as mensajeModel from './models/mensaje.model.js'
 import {genProd, genMsj} from "./api/productos.js"
-import normalizr from 'normalizr'
+import {normalize,schema} from 'normalizr'
 import util from 'util'
+/*,{},{idAttribute:'_id'}*/
 
-/*
-const normalize = normalizr.normalize
-const schema = normalizr.schema;
-const autor = new schema.Entity('autores')
-const texto = new schema.Entity('textos')
-const mensajes = new schema.Entity('mensajes',{
-    autor: autor,
-    texto: texto
+
+const authorSchema = new schema.Entity('authors')
+const textSchema = new schema.Entity('texts')
+const creadoEnSchema = new schema.Entity('creadoEn')
+const __vSchema = new schema.Entity('__vSchema')
+
+
+
+const mensajeSchema = new schema.Entity('mensajes',{
+    author: authorSchema,
+    creadoEn: creadoEnSchema,
+    text: textSchema,
+    __v:__vSchema
 })
-*/
+
+const holdingMensajesSchema = new schema.Entity('holding',{
+    mensajes:[mensajeSchema]
+})
+
+function print(objeto) {
+    console.log(util.inspect(objeto,true,12,true))
+}
 
 CRUD();
 
@@ -53,16 +66,31 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
     io.on('connection', (socket)=> {
 
         console.log(`conectado, cliente: ${socket}`)
-       /
-        mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
-            console.log(mensajes_guardados)
-            io.sockets.emit('mensajes', mensajes_guardados);
-            /*console.log(util.inspect(mensajes_guardados,false,12,true))
-            console.log(JSON.stringify(mensajes_guardados).length)
-            const normalizado = normalize(mensajes_guardados,mensajes)
-            console.log(util.inspect(normalizado,false,12,true))
-            console.log(JSON.stringify(normalizado).length + 'normalizado')*/
-        })
+        
+        mensajeModel.mensajes.find({}).then((mensajes)=>{
+            io.sockets.emit('mensajes', mensajes);
+            
+            let holdingMensajes={
+                id:1212,
+                mensajes:mensajes
+            }
+            
+            const holdingMensajesNormalizado = normalize(holdingMensajes,holdingMensajesSchema)
+            console.log("sin normalizar")
+            print(holdingMensajes);
+            console.log("\n\n\n")
+            console.log("normalizado")
+            print(holdingMensajesNormalizado);
+            
+            let longAntes = JSON.stringify(holdingMensajes).length
+            let longDespues = JSON.stringify(holdingMensajesNormalizado).length
+            console.log("\n\n\n")
+            console.log("\n\n\n")
+            console.log(longAntes)
+            console.log(longDespues)
+            console.log('Compresión:', `${Math.trunc((1 - (longDespues / longAntes)) * 100)} %`);
+        
+       })
         
         
         /*genMsj.then((msjs_guardados)=>{
@@ -119,7 +147,7 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
             })
         })
         socket.on('mensajeElim',tiempo=>{
-            mensajeModel.mensajes.deleteMany({tiempo:tiempo})
+            mensajeModel.mensajes.deleteOne({creadoEn:tiempo})
                 .then((e)=>{
                     mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
                     io.sockets.emit('mensajes', mensajes_guardados);
@@ -129,21 +157,9 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
                 console.log(e)
             })
         })
-        socket.on('nuevo-mensaje', (data)=>{
-            //let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
-            let autor = {
-                id:data.id,
-                nombre:data.nombre,
-                apellido:data.apellido,
-                edad:data.edad,
-                alias:data.alias,
-                avatar:data.avatar
-            }
-            let mensaje={
-                autor:autor,
-                text:data.text
-            }
-            console.log(mensaje)
+        socket.on('nuevo-mensaje', (mensaje)=>{
+            let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
+            mensaje.creadoEn= tiempo
             const mensajeSaveModel = new mensajeModel.mensajes(mensaje)
             mensajeSaveModel.save()
             .then((e)=>{

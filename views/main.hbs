@@ -5,8 +5,45 @@
 			right: 0px;
 		}
 	</style>
+<script>
+var socket = io();
+	function enviarProd(valor) {
+    let prod={
+        nombre:document.getElementById('titulo').value,
+        precio:document.getElementById('precio').value,
+        foto:document.getElementById('foto').value
+    };
+    console.log(prod)
+    socket.emit('producto', prod);
+    return false
+}
+
+	function enviarMens(event) {
+	let author={
+        id:document.getElementById('id').value,
+        nombre:document.getElementById('nombre').value,
+        apellido:document.getElementById('apellido').value,	
+        edad:document.getElementById('edad').value,	
+        alias:document.getElementById('alias').value		
+	}
+    let mens={
+		author:author,
+		text:document.getElementById('text').value
+    };
+    socket.emit('nuevo-mensaje', mens);
+    //return false
+} 	
+
+	function eliminar(elem, string){
+    let nombre=elem.innerHTML
+    console.log(nombre)
+    socket.emit(string, nombre);
+    return false
+}
+</script>
+
     <h1>Venta de productos</h1>
-    <form onsubmit="return enviar(this)" style="margin:20px;">
+    <form onsubmit="enviarProd(this);return false" style="margin:20px;">
         <input type="text" id="titulo" placeholder="nombre">
         <input type="text" id="precio" placeholder="precio">
         <input type="text" id="foto" placeholder="imagen(url)">
@@ -55,8 +92,9 @@
 <h1>Chat en línea</h1>
 <div id="mensajes"></div>
 <br>
-<form class="form-control "onsubmit="return enviarMensaje(this)" style="margin:20px;">
-	<input type="text" id="id" placeholder="Su nombre...">
+
+<form class="form-control "onsubmit="enviarMens(this);return false" style="margin:20px;">
+	<input type="text" id="id" placeholder="Su mail...">
 	<input type="text" id="nombre" placeholder="Su nombre...">
 	<input type="text" id="apellido" placeholder="Su apellido...">
 	<input type="number" id="edad" placeholder="Su edad...">
@@ -64,4 +102,5 @@
 	<input type="text" id="avatar" placeholder="Su avatar...">
 	<input type="text" id="text" placeholder="Su texto...">
 	<input type="submit" value="enviarMensaje">
+	<!--<button id="button" type="button" onClick="enviarMensaje" class="btn btn-primary">Submit</button>-->
 </form>

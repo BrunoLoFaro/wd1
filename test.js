@@ -5,9 +5,9 @@ let holding = {
     id:1212,
     posts:[
     {
-        "id":1,
+        "_id":1,
         "usuario":{
-            "id":1,
+            "_id":1,
             "nombre":"Bruno",
             "apellido":"Lo Faro",
             "edad":21,
@@ -15,9 +15,9 @@ let holding = {
         "comentario":"aguante node js"
     },
     {
-        "id":2,
+        "_id":2,
         "usuario":{
-            "id":2,
+            "_id":2,
             "nombre":"Bill",
             "apellido":"Evans",
             "edad":54,
@@ -25,9 +25,9 @@ let holding = {
         "comentario":"In a sentimental mood is the best jazz standard of all times"
     },
     {
-        "id":3,
+        "_id":3,
         "usuario":{
-            "id":1,
+            "_id":1,
             "nombre":"Bruno",
             "apellido":"Lo Faro",
             "edad":21,
@@ -35,9 +35,9 @@ let holding = {
         "comentario":"You are right, Bill"
     },
     {
-        "id":4,
+        "_id":4,
         "usuario":{
-            "id":2,
+            "_id":2,
             "nombre":"Bill",
             "apellido":"Evans",
             "edad":54,
@@ -45,9 +45,9 @@ let holding = {
         "comentario":"See ya in the jam"
     },
     {
-        "id":5,
+        "_id":5,
         "usuario":{
-            "id":1,
+            "_id": 1,
             "nombre":"Bruno",
             "apellido":"Lo Faro",
             "edad":21,
@@ -55,9 +55,9 @@ let holding = {
         "comentario":"See ya!"
     },
     {
-        "id":6,
+        "_id":6,
         "usuario":{
-            "id":1,
+            "_id": 1,
             "nombre":"Bruno",
             "apellido":"Lo Faro",
             "edad":21,
@@ -66,12 +66,13 @@ let holding = {
     }
     ]
 }
-const usuarioSchema = new schema.Entity('usuarios')
+/*,{idAttribute:'id'}*/
+const usuarioSchema = new schema.Entity('usuarios',{},{idAttribute:'_id'})
 const comentarioSchema = new schema.Entity('comentarios')
 const postSchema = new schema.Entity('posts',{
     usuario: usuarioSchema,
     comentario: comentarioSchema
-})
+},{idAttribute:'_id'})
 const holdingSchema = new schema.Entity('holding',{
     posts:[postSchema]
 })
@@ -82,12 +83,15 @@ function print(objeto) {
     console.log(util.inspect(objeto,false,12,true))
 }
 
-console.log("normalizados")
-
+console.log("sin normalizar")
+print(holding);
+console.log("normalizado")
 print(holdingNormalizado);
 
-console.log(JSON.stringify(holding).length + ' sin normalizar')
-console.log(JSON.stringify(holdingNormalizado).length + ' normalizado')
-let longDespues = JSON.stringify(holdingNormalizado).length
+
+
 let longAntes = JSON.stringify(holding).length
+let longDespues = JSON.stringify(holdingNormalizado).length
+console.log(longAntes)
+console.log(longDespues)
 console.log('Compresión:', `${Math.trunc((1 - (longDespues / longAntes)) * 100)} %`);
