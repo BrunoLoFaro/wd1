@@ -17,7 +17,13 @@ var socket = io();
     socket.emit('producto', prod);
     return false
 }
-
+function log(){
+	//let name = document.getElementById('user').value
+	socket.emit('new-user', "ricardito");
+	console.log(name)
+/*req.session.user=name
+console.log(req.session.user)*/
+}
 	function enviarMens(event) {
 	let author={
         id:document.getElementById('id').value,
@@ -88,7 +94,7 @@ var socket = io();
 		</div>
 	</div>
 </div>
-
+<button onclick="log()">buton</button>
 <h1>Chat en línea</h1>
 <div id="mensajes"></div>
 <br>
@@ -104,3 +110,10 @@ var socket = io();
 	<input type="submit" value="enviarMensaje">
 	<!--<button id="button" type="button" onClick="enviarMensaje" class="btn btn-primary">Submit</button>-->
 </form>
+
+<div class="card" style="width: 18rem;">
+  <div class="card-body">
+    <h5 class="card-title">Bienvenido {{user}}</h5>
+    <a href="#" class="btn btn-primary">Desloguear</a>
+  </div>
+</div>

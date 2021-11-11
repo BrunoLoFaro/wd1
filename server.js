@@ -15,6 +15,7 @@ import * as mensajeModel from './models/mensaje.model.js'
 import {genProd, genMsj} from "./api/productos.js"
 import {normalize,schema} from 'normalizr'
 import util from 'util'
+import session from 'express-session'
 /*,{},{idAttribute:'_id'}*/
 
 
@@ -76,19 +77,19 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
             }
             
             const holdingMensajesNormalizado = normalize(holdingMensajes,holdingMensajesSchema)
-            console.log("sin normalizar")
-            print(holdingMensajes);
-            console.log("\n\n\n")
-            console.log("normalizado")
-            print(holdingMensajesNormalizado);
+            //console.log("sin normalizar")
+            //print(holdingMensajes);
+            //console.log("\n\n\n")
+            //console.log("normalizado")
+            //print(holdingMensajesNormalizado);
             
             let longAntes = JSON.stringify(holdingMensajes).length
             let longDespues = JSON.stringify(holdingMensajesNormalizado).length
-            console.log("\n\n\n")
-            console.log("\n\n\n")
-            console.log(longAntes)
-            console.log(longDespues)
-            console.log('Compresión:', `${Math.trunc((1 - (longDespues / longAntes)) * 100)} %`);
+            //console.log("\n\n\n")
+            //console.log("\n\n\n")
+            //console.log(longAntes)
+            //console.log(longDespues)
+            //console.log('Compresión:', `${Math.trunc((1 - (longDespues / longAntes)) * 100)} %`);
         
        })
         
@@ -146,6 +147,11 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
                 console.log(e)
             })
         })
+        socket.on('new-user',username=>{
+            console.log(username)
+            setUser(username)
+            //setUser(username)
+        })
         socket.on('mensajeElim',tiempo=>{
             mensajeModel.mensajes.deleteOne({creadoEn:tiempo})
                 .then((e)=>{
@@ -176,7 +182,11 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
 
 //-----handlebar config-----
 server.on('error', error=>console.log('Error en servidor', error));
-
+app.use(session({
+    secret: 'secreto',
+    resave: true,
+    saveUninitialized: true
+}));
 app.use(express.static('views'));
 app.engine(
     "hbs",
@@ -194,13 +204,83 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));     
 app.use('/api',set());
 
+app.get('/logout', (req,res)=>{
+    req.session.destroy(err=>{
+        if (err){
+            res.json({status: 'Logout error', body: err});
+        } else {
+            res.send('Logout ok!');
+        }
+    });
+});
+
+app.get('/login', (req,res)=>{
+    if (!req.query.username) {
+        res.send('Login failed!');
+    } else{
+        req.session.user = req.query.username;
+        res.send('Login ok!');
+    }
+});
+
+function setUser (req, res)  {
+    req.session.user = req.user
+    console.log(req.session.user)
+}
+function auth (req, res, next)  {
+    // if (req.session && req.session.admin) {
+        console.log(req.session.user)
+    if (req.session.user) {
+        console.log(req.session.user)
+        return next();
+    } else {
+        //return res.sendStatus(401);
+        res.render('login');
+    }
+}
+/*
+app.get('/root', (req,res)=>{
+    if (req.session.contador) {
+        req.session.contador++;
+        if (!req.session.usuario) {
+            res.send(`Ud. ha visitado el sitio ${req.session.contador} veces`);
+        } else {
+            res.send(`${req.session.usuario} visitaste la página ${req.session.contador} veces`);
+        }
+    } else {
+        req.session.contador = 1;
+        if (!req.query.usuario) {
+            res.send('Te damos la bienvenida!');
+        } else {
+            req.session.usuario = req.query.usuario;
+            res.send(`Bienvenido ${req.session.usuario}!`);
+        }
+    }
+});
+*/
+/*
+app.get('/olvidar', (req,res)=>{
+    const usuario = req.session.usuario;
+    req.session.destroy(err=>{
+        if (err){
+            res.json({error: err});
+        } else {
+            if (usuario){
+                res.send(`Hasta luego ${usuario}!`);
+            } else {
+                res.send(`Hasta luego!`);
+            }
+        }
+    });
+});*/
 
 app.get('/', (req,res)=>{
 var scripts = '/layouts/index.js';
 res.render('main',{script: scripts});
 })
 
-app.get('/vista-test', (req,res)=>{
+app.get('/vista-test', auth, (req,res)=>{
     var scripts = '/layouts/index.js';
-    res.render('main',{script: scripts});
+    var user = req.session.user
+    res.render('main',{script: scripts, user});
 })
