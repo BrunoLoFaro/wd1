@@ -16,6 +16,9 @@ import {genProd, genMsj} from "./api/productos.js"
 import {normalize,schema} from 'normalizr'
 import util from 'util'
 import session from 'express-session'
+import cookieParser from 'cookie-parser'
+import FileStore from 'session-file-store'
+import MongoStore from 'connect-mongo'
 /*,{},{idAttribute:'_id'}*/
 
 
@@ -180,6 +183,9 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
 //-----handlebar config-----
 server.on('error', error=>console.log('Error en servidor', error));
 app.use(session({
+    store: MongoStore.create({
+        mongoUrl: 'mongodb://localhost/sesiones'
+    }),
     secret: 'secreto',
     resave: true,
     saveUninitialized: true,
