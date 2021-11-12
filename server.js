@@ -66,8 +66,9 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
 //-----websocket triggers-----
     io.on('connection', (socket)=> {
 
-        console.log(`conectado, cliente: ${socket}`)
-        
+        console.log(`conectado, cliente: ${socket.id}`)
+
+
         mensajeModel.mensajes.find({}).then((mensajes)=>{
             io.sockets.emit('mensajes', mensajes);
             
@@ -147,11 +148,7 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
                 console.log(e)
             })
         })
-        socket.on('new-user',username=>{
-            console.log(username)
-            setUser(username)
-            //setUser(username)
-        })
+
         socket.on('mensajeElim',tiempo=>{
             mensajeModel.mensajes.deleteOne({creadoEn:tiempo})
                 .then((e)=>{
@@ -185,7 +182,12 @@ server.on('error', error=>console.log('Error en servidor', error));
 app.use(session({
     secret: 'secreto',
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
+    rolling: true, // <-- Set `rolling` to `true`
+    cookie: {
+      httpOnly: true,
+      maxAge: 60000
+    }
 }));
 app.use(express.static('views'));
 app.engine(
@@ -209,24 +211,22 @@ app.get('/logout', (req,res)=>{
         if (err){
             res.json({status: 'Logout error', body: err});
         } else {
-            res.send('Logout ok!');
+            res.render('login');
         }
     });
 });
 
 app.get('/login', (req,res)=>{
     if (!req.query.username) {
-        res.send('Login failed!');
+        res.render('login');
     } else{
         req.session.user = req.query.username;
-        res.send('Login ok!');
+        var scripts = '/layouts/index.js';
+        var user = req.session.user
+        res.render('main',{script: scripts, user});
     }
 });
 
-function setUser (req, res)  {
-    req.session.user = req.user
-    console.log(req.session.user)
-}
 function auth (req, res, next)  {
     // if (req.session && req.session.admin) {
         console.log(req.session.user)
@@ -273,11 +273,11 @@ app.get('/olvidar', (req,res)=>{
         }
     });
 });*/
-
+/*
 app.get('/', (req,res)=>{
 var scripts = '/layouts/index.js';
 res.render('main',{script: scripts});
-})
+})*/
 
 app.get('/vista-test', auth, (req,res)=>{
     var scripts = '/layouts/index.js';
