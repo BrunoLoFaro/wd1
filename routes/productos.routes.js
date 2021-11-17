@@ -29,3 +29,10 @@ export function set(){
         .delete("/borrar/:id", deleteProducto);*/
         return Router
     }
+
+    export const passportRoutes = Router()
+
+    passportRoutes
+        .get("/", getRoot)
+        .get("/login", getLogin)
+        .get("/listar/:id", getSignup)
