@@ -1,4 +1,4 @@
-import { productosRouter, set } from './routes/productos.routes.js';
+import { productosRouter, set } from './|/productos.routes.js';
 //import { handleError } from './middleware/errorHandler.js';
 import express from 'express';
 const app = express();
@@ -10,6 +10,7 @@ import { Server } from "socket.io";
 const io = new Server(http);
 import moment from 'moment'
 import mongoose from 'mongoose'
+import * as autorModel from './models/autor.model'
 import * as productoModel from './models/producto.model.js'
 import * as mensajeModel from './models/mensaje.model.js'
 import {genProd, genMsj} from "./api/productos.js"
@@ -19,6 +20,8 @@ import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import FileStore from 'session-file-store'
 import MongoStore from 'connect-mongo'
+import passport from 'passport'
+import LocalStrategy from 'passport-local'
 /*,{},{idAttribute:'_id'}*/
 
 
@@ -195,6 +198,66 @@ app.use(session({
       maxAge: 60000
     }
 }));
+
+const usuarios = [];//fetch from db
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use('signup', new LocalStrategy({
+    passReqToCallback: true
+},
+    function(req, username, password, done) {
+        autorModel.autores.findOne({alias: username})
+        .then((autor_guardado)=>{
+            if (autor_guardado != null){
+                return done(null, false, console.log(usuario.username, 'Usuario ya existe'));
+            } else {
+                let nuevoAutor = {
+                    id:"", //no me proveen estos datos. Los necesito para cargar
+                    nombre:"nn", 
+                    apellido:"nn",
+                    edad:0,
+                    alias: username,
+                    avatar:""
+                }
+                const autorSaveModel = new autorModel.autores(nuevoAutor)
+                autorSaveModel.save()
+                return done(null, nuevoUsuario)
+            }
+        })
+    }
+));
+
+passport.use('login', new LocalStrategy({
+        passReqToCallback: true
+    }, 
+    function (req, username, password, done) {
+
+        autorModel.autores.findOne({alias: username})
+            .then((autor_guardado)=>{
+                if (autor_guardado == []) {
+                    return done(null, false, console.log(username, 'usuario no existe'));
+                } else {
+                    if (passwordValida(autor_guardado, password)) {
+                        return done(null, autor_guardado)  
+                    } else {
+                        return done(null, false, console.log(username, 'password errónea'));
+                    }
+                }
+            })
+        })
+);
+
+passport.serializeUser((user, done)=>{
+    done(null, user._id);
+});
+
+passport.deserializeUser((id, done)=>{
+    let usuario = obtenerUsuarioId(usuarios, id);
+    done(null, usuario);
+});
+
 app.use(express.static('views'));
 app.engine(
     "hbs",
@@ -232,7 +295,7 @@ app.get('/login', (req,res)=>{
         res.render('main',{script: scripts, user});
     }
 });
-
+/*
 function auth (req, res, next)  {
     // if (req.session && req.session.admin) {
         console.log(req.session.user)
@@ -243,42 +306,15 @@ function auth (req, res, next)  {
         //return res.sendStatus(401);
         res.render('login');
     }
-}
-/*
-app.get('/root', (req,res)=>{
-    if (req.session.contador) {
-        req.session.contador++;
-        if (!req.session.usuario) {
-            res.send(`Ud. ha visitado el sitio ${req.session.contador} veces`);
-        } else {
-            res.send(`${req.session.usuario} visitaste la página ${req.session.contador} veces`);
-        }
+}*/
+function checkAuthentication(req, res, next){
+    if (req.isAuthenticated()){
+        next();
     } else {
-        req.session.contador = 1;
-        if (!req.query.usuario) {
-            res.send('Te damos la bienvenida!');
-        } else {
-            req.session.usuario = req.query.usuario;
-            res.send(`Bienvenido ${req.session.usuario}!`);
-        }
+        res.redirect('/');
     }
-});
-*/
-/*
-app.get('/olvidar', (req,res)=>{
-    const usuario = req.session.usuario;
-    req.session.destroy(err=>{
-        if (err){
-            res.json({error: err});
-        } else {
-            if (usuario){
-                res.send(`Hasta luego ${usuario}!`);
-            } else {
-                res.send(`Hasta luego!`);
-            }
-        }
-    });
-});*/
+}
+
 /*
 app.get('/', (req,res)=>{
 var scripts = '/layouts/index.js';
