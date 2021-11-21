@@ -1,6 +1,6 @@
 import {Router} from "express"
 import {generar} from "../api/productos.js"
-
+import * as logInFunctions from "./logIn_functions.js"
 import {
     getProducto,
     getProductoById,
@@ -30,9 +30,9 @@ export function set(){
         return Router
     }
 
-    export const passportRoutes = Router()
+  /*  export const passportRoutes = Router()
 
     passportRoutes
-        .get("/", getRoot)
-        .get("/login", getLogin)
-        .get("/listar/:id", getSignup)
+        //.get("/", logInFunctions.getRoot)
+        .get("/login", logInFunctions.getLogin)
+        .get("/register", logInFunctions.getSignup)*/
