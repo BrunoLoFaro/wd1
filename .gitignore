@@ -1,2 +1,14 @@
 
 node_modules/
+
+*.wt
+
+storage.bson
+
+WiredTiger
+
+WiredTiger.lock
+
+WiredTiger.turtle
+
+mongod.lock

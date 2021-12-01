@@ -25,6 +25,7 @@ import passport from 'passport'
 import LocalStrategy from 'passport-local'
 import * as logInFunctions from "./routes/logIn_functions.js"
 import Twitter from 'passport-twitter'
+import fork from 'child_process'
 
 dotenv.config({path: './config/.env'})
 const TwitterStrategy = Twitter.Strategy
@@ -288,6 +289,25 @@ app.get('/logout', logInFunctions.getLogout);
 app.get('/ruta-protegida', checkAuthentication, logInFunctions.getRutaProtegida);
 
 app.get('/datos', logInFunctions.getDatos);
+
+app.get('/info', function (req, res, next) {
+    res.render('info', {layout: true});
+});
+
+app.get('/randoms', function (req, res, next) {
+    res.render('info', {layout: true});
+    let cantidad
+    if(req.cant==null)
+    {
+        cantidad=100000000
+    }
+    else
+        cantidad=req.cant
+    const calcRandom = fork('./calcRandom.js');
+    calcRandom.send('start');
+    calcRandom.on('message', sum=>res.end(`La suma es ${sum}`));
+    console.log('Es no bloqueante!');
+ });
 
 app.get('*', logInFunctions.failRoute);
 
