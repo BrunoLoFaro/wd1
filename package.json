@@ -27,7 +27,8 @@
     "sqlite3": "^5.0.2"
   },
   "scripts": {
-    "start": "node proyecto.js"
+    "start": "node proyecto.js",
+    "dev": "start mongo.bat && node server.js"
   },
   "engines": {
     "node": ">=14.0.0",

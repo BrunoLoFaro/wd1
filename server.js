@@ -24,16 +24,23 @@ import MongoStore from 'connect-mongo'
 import passport from 'passport'
 import LocalStrategy from 'passport-local'
 import * as logInFunctions from "./routes/logIn_functions.js"
-import Twitter from 'passport-twitter'
+import passport_facebook from 'passport-facebook';
+const FacebookStrategy = passport_facebook.Strategy;
+import https from 'https'; 
+import fs from 'fs'; 
 import fork from 'child_process'
 
-dotenv.config({path: './config/.env'})
-const TwitterStrategy = Twitter.Strategy
+const httpsOptions = {
+    key: fs.readFileSync('./sslcert/cert.key'),
+    cert: fs.readFileSync('./sslcert/cert.pem')
+}
+
+//dotenv.config({path: './config/.env'})
+//const TwitterStrategy = Twitter.Strategy
 const authorSchema = new schema.Entity('authors')
 const textSchema = new schema.Entity('texts')
 const creadoEnSchema = new schema.Entity('creadoEn')
 const __vSchema = new schema.Entity('__vSchema')
-
 
 
 const mensajeSchema = new schema.Entity('mensajes',{
@@ -50,6 +57,48 @@ const holdingMensajesSchema = new schema.Entity('holding',{
 function print(objeto) {
     console.log(util.inspect(objeto,true,12,true))
 }
+
+app.use(session({
+    store: MongoStore.create({
+        mongoUrl: 'mongodb://localhost/sesiones'
+    }),
+    secret: 'secreto',
+    resave: true,
+    saveUninitialized: true,
+    rolling: true, // <-- Set `rolling` to `true`
+    cookie: {
+      httpOnly: true,
+      maxAge: 60000
+    }
+}));
+
+const usuarios = [];
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+passport.use(new FacebookStrategy({
+    clientID: '881042735939498',
+    clientSecret: 'f02aec876f3d8071916df4984225a56a',
+    callbackURL: `https://localhost:8443/auth/facebook/datos`
+  },
+  function(accessToken, refreshToken, profile, cb) {
+      let indice = usuarios.findIndex(e=>e.id == profile.id);
+      if (indice == -1) {
+          let usuario = {
+              id: profile.id
+          };
+          console.log('nuevo', usuario);
+          usuarios.push(usuario);
+          return cb(null, usuario);
+      } else {
+          console.log('encontré', usuarios[indice]);
+          return cb(null, usuarios[indice])
+      }
+  }
+));
+
 
 CRUD();
 
@@ -70,8 +119,21 @@ async function CRUD (){
     }
 }
 
-const PORT = 8080//process.env.PORT
-const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
+const PORT = 8443//process.env.PORT
+
+const server = https.createServer(httpsOptions, app)
+    .listen(PORT, () => {
+        console.log('Server corriendo en ' + PORT)
+    })
+
+passport.serializeUser((user, done)=>{
+    done(null, user.id);
+});
+
+passport.deserializeUser((id, done)=>{
+    let usuario = usuarios[usuarios.findIndex(e=>e.id == id)];
+    done(null, usuario);
+}); 
 
 //-----websocket triggers-----
     io.on('connection', (socket)=> {
@@ -187,67 +249,7 @@ const server = http.listen(PORT,()=>console.log('SERVER ON '+PORT));
     })
 })
 
-//-----handlebar config-----
 server.on('error', error=>console.log('Error en servidor', error));
-app.use(session({
-    store: MongoStore.create({
-        mongoUrl: 'mongodb://localhost/sesiones'
-    }),
-    secret: 'secreto',
-    resave: true,
-    saveUninitialized: true,
-    rolling: true, // <-- Set `rolling` to `true`
-    cookie: {
-      httpOnly: true,
-      maxAge: 60000
-    }
-}));
-
-const usuarios = [];//fetch from db
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-passport.use(new TwitterStrategy({
-    consumerKey: process.env.TWITTER_API_KEY,
-    consumerSecret: process.env.TWITTER_API_SECRET,
-    callbackURL: `http://localhost:${PORT}/auth/twitter/datos`
-  },
-  function(accessToken, refreshToken, profile, cb) {
-      console.log("aca llegué")
-    //let indice = usuarios.findIndex(e=>e.twitterId == profile.id);
-    autorModel.autores.findOne({alias: profile.username})
-    .then((autor_guardado)=>{
-            if (autor_guardado != null) {
-                return cb(null, autor_guardado);
-            } else {
-                console.log('profile:');
-                console.log(profile);
-                let nuevoAutor = {
-                    id:"", //no me proveen estos datos. Los necesito para cargar
-                    nombre:"nn", 
-                    apellido:"nn",
-                    edad:0,
-                    alias: username,
-                    avatar:""
-                }
-                const autorSaveModel = new autorModel.autores(nuevoAutor)
-                autorSaveModel.save()
-                return done(null, nuevoAutor)
-            }
-    })
-  }
-));
-
-passport.serializeUser((user, done)=>{
-    done(null, autor._id);
-});
-
-passport.deserializeUser((id, done)=>{
-    let autor = obtenerUsuarioId(autores, id);
-    done(null, autor);
-});
-
 
 app.engine(
     "hbs",
@@ -265,21 +267,31 @@ app.use|(express.urlencoded({extended: true}));
 app.use('/api',set());
 app.use(express.static('views'));
 
-app.get('/auth/twitter', passport.authenticate('twitter'));
-app.get('/auth/twitter/datos',
-    passport.authenticate('twitter', { failureRedirect: '/error-login.html' }),
-    function(req, res) {
-        req.user.visitas++;
-        res.redirect('/datos');
-    }
-);
-
 app.get('/vista-test', (req,res)=>{
     var scripts = '/layouts/index.js';
     var user = req.session.user
     res.render('main',{script: scripts, user});
 })
+app.get('/auth/facebook',
+  passport.authenticate('facebook'));
 
+app.get('/auth/facebook/datos',
+  passport.authenticate('facebook', { failureRedirect: '/error-login.html' }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/datos');
+  });
+
+  app.get('/datos', (req,res) => {
+    if (req.isAuthenticated()) {
+        let user = req.user;
+        res.json({user});
+        //res.render('info', {layout: true});
+    } else {
+        res.redirect('/index.html');
+    }
+});
+/*
 app.get('/', function (req, res, next) {
     res.render('login', {layout: false});
  });
@@ -294,6 +306,8 @@ app.get('/info', function (req, res, next) {
     res.render('info', {layout: true});
 });
 
+*/
+/*
 app.get('/randoms', function (req, res, next) {
     res.render('info', {layout: true});
     let cantidad
@@ -302,14 +316,16 @@ app.get('/randoms', function (req, res, next) {
         cantidad=100000000
     }
     else
-        cantidad=req.cant
+        cantidad=req.cantp
     const calcRandom = fork('./calcRandom.js');
     calcRandom.send('start');
     calcRandom.on('message', sum=>res.end(`La suma es ${sum}`));
     console.log('Es no bloqueante!');
  });
+ */
 
 app.get('*', logInFunctions.failRoute);
+
 
 function checkAuthentication(req, res, next){
     if (req.isAuthenticated()){
