@@ -167,7 +167,7 @@ passport.deserializeUser((id, done)=>{
        })
         
         
-        /*genMsj.then((msjs_guardados)=>{
+        genMsj.then((msjs_guardados)=>{
             for(let e of msjs_guardados)
             {
                 console.log(e)
@@ -179,11 +179,11 @@ passport.deserializeUser((id, done)=>{
             }                
 
             //io.sockets.emit('mensajes', msjs_guardados)
-        })*/
+        })
         
-        /**productoModel.productos.find({}).then((productos_guardados)=>{
+        productoModel.productos.find({}).then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
-        })**/
+        })
         
         genProd.then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
@@ -267,11 +267,17 @@ app.use|(express.urlencoded({extended: true}));
 app.use('/api',set());
 app.use(express.static('views'));
 
-app.get('/vista-test', (req,res)=>{
+app.get('/mainPage', (req,res)=>{
+    console.log("1")
+    passport.authenticate('facebook', { failureRedirect: '/error-login.html' }),
+    function(req, res) {
+        console.log("2")
     var scripts = '/layouts/index.js';
     var user = req.session.user
     res.render('main',{script: scripts, user});
+    }
 })
+
 app.get('/auth/facebook',
   passport.authenticate('facebook'));
 
@@ -279,34 +285,10 @@ app.get('/auth/facebook/datos',
   passport.authenticate('facebook', { failureRedirect: '/error-login.html' }),
   function(req, res) {
     // Successful authentication, redirect home.
-    res.redirect('/datos');
-  });
-
-  app.get('/datos', (req,res) => {
-    if (req.isAuthenticated()) {
-        let user = req.user;
-        res.json({user});
-        //res.render('info', {layout: true});
-    } else {
-        res.redirect('/index.html');
-    }
+    var scripts = '/layouts/index.js';
+    var user = req.session.user
+    res.render('main',{script: scripts, user});
 });
-/*
-app.get('/', function (req, res, next) {
-    res.render('login', {layout: false});
- });
-
-app.get('/logout', logInFunctions.getLogout);
-
-app.get('/ruta-protegida', checkAuthentication, logInFunctions.getRutaProtegida);
-
-app.get('/datos', logInFunctions.getDatos);
-
-app.get('/info', function (req, res, next) {
-    res.render('info', {layout: true});
-});
-
-*/
 /*
 app.get('/randoms', function (req, res, next) {
     res.render('info', {layout: true});
@@ -326,7 +308,7 @@ app.get('/randoms', function (req, res, next) {
 
 app.get('*', logInFunctions.failRoute);
 
-
+/*
 function checkAuthentication(req, res, next){
     if (req.isAuthenticated()){
         next();
@@ -334,3 +316,19 @@ function checkAuthentication(req, res, next){
         res.redirect('/');
     }
 }
+
+  app.get('/datos', (req,res) => {
+    if (req.isAuthenticated()) {
+        let user = req.user;
+        res.json({user});
+        //res.render('info', {layout: true});
+    } else {
+        res.redirect('/index.html');
+    }
+});*/
+/*
+app.get('/logout', logInFunctions.getLogout);
+
+app.get('/ruta-protegida', checkAuthentication, logInFunctions.getRutaProtegida);
+
+*/
