@@ -5,10 +5,8 @@ import express from 'express';
 const app = express();
 //import {generador} from './generador/productos.js'
 import handlebars from 'express-handlebars'
-import http1 from 'http'
-const http = http1.Server(app)
 import { Server } from "socket.io";
-const io = new Server(http);
+import https from 'https'; 
 import moment from 'moment'
 import mongoose from 'mongoose'
 import * as autorModel from './models/autor.model.js'
@@ -18,17 +16,15 @@ import {genProd, genMsj} from "./api/productos.js"
 import {normalize,schema} from 'normalizr'
 import util from 'util'
 import session from 'express-session'
-import cookieParser from 'cookie-parser'
-import FileStore from 'session-file-store'
 import MongoStore from 'connect-mongo'
 import passport from 'passport'
-import LocalStrategy from 'passport-local'
 import * as logInFunctions from "./routes/logIn_functions.js"
 import passport_facebook from 'passport-facebook';
 const FacebookStrategy = passport_facebook.Strategy;
-import https from 'https'; 
 import fs from 'fs'; 
 import fork from 'child_process'
+//import routes from '/routes/logIn_functions.js'
+
 
 const httpsOptions = {
     key: fs.readFileSync('./sslcert/cert.key'),
@@ -36,7 +32,6 @@ const httpsOptions = {
 }
 
 //dotenv.config({path: './config/.env'})
-//const TwitterStrategy = Twitter.Strategy
 const authorSchema = new schema.Entity('authors')
 const textSchema = new schema.Entity('texts')
 const creadoEnSchema = new schema.Entity('creadoEn')
@@ -81,7 +76,8 @@ app.use(passport.session());
 passport.use(new FacebookStrategy({
     clientID: '881042735939498',
     clientSecret: 'f02aec876f3d8071916df4984225a56a',
-    callbackURL: `https://localhost:8443/auth/facebook/datos`
+    callbackURL: `https://localhost:8443/auth/facebook/datos`,
+    profileFields: ['id','name','emails','photos']
   },
   function(accessToken, refreshToken, profile, cb) {
       let indice = usuarios.findIndex(e=>e.id == profile.id);
@@ -89,6 +85,7 @@ passport.use(new FacebookStrategy({
           let usuario = {
               id: profile.id
           };
+          console.log(profile);
           console.log('nuevo', usuario);
           usuarios.push(usuario);
           return cb(null, usuario);
@@ -125,6 +122,8 @@ const server = https.createServer(httpsOptions, app)
     .listen(PORT, () => {
         console.log('Server corriendo en ' + PORT)
     })
+
+const io = new Server(server);
 
 passport.serializeUser((user, done)=>{
     done(null, user.id);
@@ -166,7 +165,7 @@ passport.deserializeUser((id, done)=>{
         
        })
         
-        
+        /*
         genMsj.then((msjs_guardados)=>{
             for(let e of msjs_guardados)
             {
@@ -179,7 +178,7 @@ passport.deserializeUser((id, done)=>{
             }                
 
             //io.sockets.emit('mensajes', msjs_guardados)
-        })
+        })*/
         
         productoModel.productos.find({}).then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
@@ -267,16 +266,19 @@ app.use|(express.urlencoded({extended: true}));
 app.use('/api',set());
 app.use(express.static('views'));
 
+/*
 app.get('/mainPage', (req,res)=>{
     console.log("1")
     passport.authenticate('facebook', { failureRedirect: '/error-login.html' }),
     function(req, res) {
         console.log("2")
-    var scripts = '/layouts/index.js';
+    //var scripts = '/layouts/index.js';
     var user = req.session.user
-    res.render('main',{script: scripts, user});
+    //res.render('main',{script: scripts, user});
+    res.render('main',{user});
     }
 })
+*/
 
 app.get('/auth/facebook',
   passport.authenticate('facebook'));
@@ -285,10 +287,25 @@ app.get('/auth/facebook/datos',
   passport.authenticate('facebook', { failureRedirect: '/error-login.html' }),
   function(req, res) {
     // Successful authentication, redirect home.
+    //var scripts = '/layouts/index.js';
+    var user = req.session.user
+    res.render('main'/*,{script: scripts, user}*/);
+});
+
+
+//esto se saltea el login. Es para probar
+app.get('/vista-test', (req,res)=>{
     var scripts = '/layouts/index.js';
     var user = req.session.user
     res.render('main',{script: scripts, user});
-});
+})
+
+app.get('/logout', logInFunctions.getLogout);
+
+app.get('/ruta-protegida', checkAuthentication, logInFunctions.getRutaProtegida);
+
+app.get('/datos', logInFunctions.getDatos);
+
 /*
 app.get('/randoms', function (req, res, next) {
     res.render('info', {layout: true});
@@ -308,7 +325,7 @@ app.get('/randoms', function (req, res, next) {
 
 app.get('*', logInFunctions.failRoute);
 
-/*
+
 function checkAuthentication(req, res, next){
     if (req.isAuthenticated()){
         next();
@@ -316,19 +333,3 @@ function checkAuthentication(req, res, next){
         res.redirect('/');
     }
 }
-
-  app.get('/datos', (req,res) => {
-    if (req.isAuthenticated()) {
-        let user = req.user;
-        res.json({user});
-        //res.render('info', {layout: true});
-    } else {
-        res.redirect('/index.html');
-    }
-});*/
-/*
-app.get('/logout', logInFunctions.getLogout);
-
-app.get('/ruta-protegida', checkAuthentication, logInFunctions.getRutaProtegida);
-
-*/
