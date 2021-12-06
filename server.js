@@ -18,7 +18,7 @@ import util from 'util'
 import session from 'express-session'
 import MongoStore from 'connect-mongo'
 import passport from 'passport'
-import * as logInFunctions from "./routes/logIn_functions.js"
+import * as logInRoutes from "./routes/logInRoutes.js"
 import passport_facebook from 'passport-facebook';
 const FacebookStrategy = passport_facebook.Strategy;
 import fs from 'fs'; 
@@ -49,8 +49,8 @@ const holdingMensajesSchema = new schema.Entity('holding',{
     mensajes:[mensajeSchema]
 })
 
-function print(objeto) {
-    console.log(util.inspect(objeto,true,12,true))
+function print(objeto, depth) {
+    console.log(util.inspect(objeto,false,depth,true))
 }
 
 app.use(session({
@@ -62,8 +62,8 @@ app.use(session({
     saveUninitialized: true,
     rolling: true, // <-- Set `rolling` to `true`
     cookie: {
-      httpOnly: true,
-      maxAge: 60000
+      httpOnly: false,//true
+      maxAge: 10//60000
     }
 }));
 
@@ -80,18 +80,21 @@ passport.use(new FacebookStrategy({
     profileFields: ['id','name','emails','photos']
   },
   function(accessToken, refreshToken, profile, cb) {
-      let indice = usuarios.findIndex(e=>e.id == profile.id);
-      if (indice == -1) {
-          let usuario = {
-              id: profile.id
-          };
-          console.log(profile);
-          console.log('nuevo', usuario);
-          usuarios.push(usuario);
-          return cb(null, usuario);
-      } else {
-          console.log('encontré', usuarios[indice]);
-          return cb(null, usuarios[indice])
+      let indice = usuarios.findIndex(e=>e.facebookId  == profile.id);
+      if (indice != -1) {
+          //console.log("encontré")
+        return cb(null, usuarios[indice]);
+      }
+      else{
+        //console.log("no encontré")
+        let userData = profile._json
+        let nuevoUsuario = {
+            facebookId: userData.id, 
+            name: userData.first_name+' '+userData.last_name, 
+            picture: userData.picture.data.url,
+        }
+        usuarios.push(nuevoUsuario);
+        return cb(null, nuevoUsuario)
       }
   }
 ));
@@ -126,18 +129,18 @@ const server = https.createServer(httpsOptions, app)
 const io = new Server(server);
 
 passport.serializeUser((user, done)=>{
-    done(null, user.id);
+    done(null, user.facebookId);
 });
 
 passport.deserializeUser((id, done)=>{
-    let usuario = usuarios[usuarios.findIndex(e=>e.id == id)];
+    let usuario = usuarios[usuarios.findIndex(e=>e.facebookId == id)];
     done(null, usuario);
 }); 
 
 //-----websocket triggers-----
     io.on('connection', (socket)=> {
 
-        console.log(`conectado, cliente: ${socket.id}`)
+        //console.log(`conectado, cliente: ${socket.id}`)
 
 
         mensajeModel.mensajes.find({}).then((mensajes)=>{
@@ -280,31 +283,28 @@ app.get('/mainPage', (req,res)=>{
 })
 */
 
-app.get('/auth/facebook',
-  passport.authenticate('facebook'));
 
 app.get('/auth/facebook/datos',
   passport.authenticate('facebook', { failureRedirect: '/error-login.html' }),
   function(req, res) {
-    // Successful authentication, redirect home.
-    //var scripts = '/layouts/index.js';
-    var user = req.session.user
-    res.render('main'/*,{script: scripts, user}*/);
+    var scripts = '/layouts/index.js';
+    let usuario = usuarios[0]
+    res.render('main',{script: scripts,usuario});
 });
 
 
 //esto se saltea el login. Es para probar
+
 app.get('/vista-test', (req,res)=>{
     var scripts = '/layouts/index.js';
     var user = req.session.user
     res.render('main',{script: scripts, user});
 })
 
-app.get('/logout', logInFunctions.getLogout);
+app.get('/logout', logInRoutes.getLogout);
 
-app.get('/ruta-protegida', checkAuthentication, logInFunctions.getRutaProtegida);
+app.get('/', checkAuthentication, logInRoutes.getRutaProtegida);
 
-app.get('/datos', logInFunctions.getDatos);
 
 /*
 app.get('/randoms', function (req, res, next) {
@@ -323,13 +323,13 @@ app.get('/randoms', function (req, res, next) {
  });
  */
 
-app.get('*', logInFunctions.failRoute);
+app.get('*', logInRoutes.failRoute);
 
 
 function checkAuthentication(req, res, next){
     if (req.isAuthenticated()){
         next();
     } else {
-        res.redirect('/');
+        res.redirect('/auth/facebook/datos');
     }
 }

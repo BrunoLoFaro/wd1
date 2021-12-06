@@ -1,6 +1,6 @@
 import {Router} from "express"
 import {generar} from "../api/productos.js"
-import * as logInFunctions from "./logIn_functions.js"
+import * as logInRoutes from "./logInRoutes.js"
 import {
     getProducto,
     getProductoById,

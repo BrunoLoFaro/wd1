@@ -1,9 +1,7 @@
 //socket io definido en script embebido en main.hbs 
 
 //funciones referentes a webSockets
-console.log("hola")
 socket.on('producto', (data) => {
-    console.log("hola2")
     createTable(data);
 })
 
