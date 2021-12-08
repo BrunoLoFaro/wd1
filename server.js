@@ -25,13 +25,32 @@ import fs from 'fs';
 import fork from 'child_process'
 //import routes from '/routes/logIn_functions.js'
 
+dotenv.config({path: './config/.env'})
+
+let args = process.argv.slice(2);
+
+let PORT = args[0]
+let fb_client_id = args[1]
+let fb_client_secret = args[2]
+
+if(PORT === undefined) PORT = process.env.PORT 
+if(fb_client_id === undefined) fb_client_id = process.env.FACEBOOK_API_KEY
+if(fb_client_secret === undefined) fb_client_secret = process.env.FACEBOOK_API_SECRET
+
+
+process.on('exit',(code)=>{
+    console.log(salida);
+    if (code != 0) {
+        console.log('Codigo de salida: ', code);
+    }
+});
 
 const httpsOptions = {
     key: fs.readFileSync('./sslcert/cert.key'),
     cert: fs.readFileSync('./sslcert/cert.pem')
 }
 
-//dotenv.config({path: './config/.env'})
+
 const authorSchema = new schema.Entity('authors')
 const textSchema = new schema.Entity('texts')
 const creadoEnSchema = new schema.Entity('creadoEn')
@@ -74,8 +93,8 @@ app.use(passport.session());
 
 
 passport.use(new FacebookStrategy({
-    clientID: '881042735939498',
-    clientSecret: 'f02aec876f3d8071916df4984225a56a',
+    clientID: fb_client_id,
+    clientSecret: fb_client_secret,
     callbackURL: `https://localhost:8443/auth/facebook/datos`,
     profileFields: ['id','name','emails','photos']
   },
@@ -119,12 +138,10 @@ async function CRUD (){
     }
 }
 
-const PORT = 8443//process.env.PORT
-
-const server = https.createServer(httpsOptions, app)
-    .listen(PORT, () => {
-        console.log('Server corriendo en ' + PORT)
-    })
+    const server = https.createServer(httpsOptions, app)
+        .listen(PORT, () => {
+            console.log('Server corriendo en ' + PORT)
+        })
 
 const io = new Server(server);
 
@@ -306,22 +323,37 @@ app.get('/logout', logInRoutes.getLogout);
 app.get('/', checkAuthentication, logInRoutes.getRutaProtegida);
 
 
-/*
+
 app.get('/randoms', function (req, res, next) {
-    res.render('info', {layout: true});
     let cantidad
-    if(req.cant==null)
-    {
-        cantidad=100000000
+    cantidad=(req.cant==undefined)?100000000:req.cant;
+    let calcRandom 
+    for(let i=0; i<cantidad; i++){
+        calcRandom = fork('./calcRandom.js');
     }
-    else
-        cantidad=req.cantp
-    const calcRandom = fork('./calcRandom.js');
+
     calcRandom.send('start');
     calcRandom.on('message', sum=>res.end(`La suma es ${sum}`));
     console.log('Es no bloqueante!');
  });
- */
+
+ app.get('/info', function (req, res, next) {
+    let platform = process.platform
+    let version = process.version
+    let memory = process.memoryUsage()
+    let execPath = process.execPath
+    let pid = process.pid
+
+    let data={
+        platform,
+        args,
+        version,
+        memory,
+        execPath,
+        pid
+    }
+    res.render('info',{data});//, {layout: true},{data}
+ });
 
 app.get('*', logInRoutes.failRoute);
 

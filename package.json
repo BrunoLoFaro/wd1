@@ -13,6 +13,7 @@
     "express-handlebars": "^5.3.4",
     "express-session": "^1.17.2",
     "faker": "^5.5.3",
+    "fs": "^0.0.1-security",
     "knex": "^0.95.11",
     "moment": "^2.29.1",
     "mongoose": "^6.0.12",
