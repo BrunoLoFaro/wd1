@@ -1,5 +1,7 @@
-import mongoose from 'mongoose'
-import {autorschema} from './autor.model.js'
+const mongoose = require('mongoose')
+const autorModel = require('./autor.model.js')
+autorschema = autorModel.autorschema
+
 const mensajesCollection = 'mensajes'
 const mensajeschema = new mongoose.Schema({
     author: autorschema,
@@ -7,4 +9,5 @@ const mensajeschema = new mongoose.Schema({
     text: {type:String, require: true, max:100}
 }/*,{ timestamps: { createdAt: 'created_at' } }*/)
 
-export const mensajes = mongoose.model(mensajesCollection, mensajeschema);
+const mensajes = mongoose.model(mensajesCollection, mensajeschema);
+exports.mensajes=mensajes

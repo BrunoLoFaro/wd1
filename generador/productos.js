@@ -1,15 +1,17 @@
-import faker from 'faker'
-import mongoose from 'mongoose'
+const faker = require('faker')
+//import faker from 'faker'
+//import mongoose from 'mongoose'
+const mongoose = require('mongoose')
 faker.locale = 'es';
 
-export let generadorProd = () => ({
+let generadorProd = () => ({
     nombre: faker.commerce.productName(),
     precio: faker.commerce.price(),
     foto: faker.image.avatar()
 });
+exports.generadorProd=generadorProd
 
-
-export let generadorMensaje = () => {
+let generadorMensaje = () => {
     let obj = {
         id:1212,
         author:autores[randomIntFromInterval(0,1)]
@@ -26,6 +28,7 @@ export let generadorMensaje = () => {
     }
     return obj
 };
+exports.generadorMensaje= generadorMensaje
 
 function randomIntFromInterval(min, max) { // min and max included 
     return Math.floor(Math.random() * (max - min + 1) + min)

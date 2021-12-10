@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+const mongoose = require('mongoose')
 const productosCollection = 'productos'
 const productoSchema = new mongoose.Schema({
     id:{type:Number, require: true},
@@ -10,4 +10,5 @@ const productoSchema = new mongoose.Schema({
     precio:{type:Number, require: true, max:5000},
 })
 
-export const productos = mongoose.model(productosCollection, productoSchema);
+const productos = mongoose.model(productosCollection, productoSchema);
+exports.productos=productos

@@ -1,8 +1,8 @@
 <li>{{data.platform}}</li>
-<li>
-    <!--{{if(args[0] != undefined)args[0]}}-->
-</li>
 <li>{{data.version}}</li> 
-<li>{{data.memory}}</li> 
-<li>{{data.execPath}}</li> 
-<li>{{data.pid}}</li> 
+<li>Memory used</li> 
+{{#each data.memory}}
+<li>{{this}} </li> 
+ {{/each}}
+<li>execPath: {{data.execPath}}</li> 
+<li>pid: {{data.pid}}</li> 

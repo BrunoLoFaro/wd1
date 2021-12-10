@@ -1,6 +1,6 @@
-import mongoose from 'mongoose'
+const mongoose = require('mongoose')
 const autoresCollection = 'autores'
-export const autorschema = new mongoose.Schema({
+const autorschema = new mongoose.Schema({
     id:{type:String, require: true, max:100},
     nombre:{type:String, require: true},
     apellido:{type:String, require: true},
@@ -9,5 +9,6 @@ export const autorschema = new mongoose.Schema({
     avatar:{type:String, require: true, max:100}
     }
 )
-
-export const autores = mongoose.model(autoresCollection, autorschema);
+exports.autorschema=autorschema
+const autores = mongoose.model(autoresCollection, autorschema);
+exports.autores=autores

@@ -1,4 +1,4 @@
-export const getProducto = (req,res)=>{
+const getProducto = (req,res)=>{
     let r
     knexProductos.from('productos').select('*')
     .then(prods => {
@@ -9,8 +9,9 @@ export const getProducto = (req,res)=>{
         res.json({})
     });
 };
+exports.getProducto = getProducto
 
-export const getProductoById = (req,res)=>{
+const getProductoById = (req,res)=>{
     let id = req.params;
     let producto
     knexProductos.from('productos').select('*').where('id', '=', id)
@@ -22,9 +23,9 @@ export const getProductoById = (req,res)=>{
             console.log('Error en select:', e);
         })
 };
+exports.getProductoById=getProductoById
 
-
-export const postProducto = (req,res)=>{
+const postProducto = (req,res)=>{
     let producto = req.body;
         knexProductos('productos').insert(producto)
         .then (()=>{
@@ -37,8 +38,9 @@ export const postProducto = (req,res)=>{
             console.log('Error en Insert:', e);
         })
 };
+exports.postProducto=postProducto
 
-export const putProducto = (req,res)=>{
+const putProducto = (req,res)=>{
     let producto = req.body;
         knexProductos.from('productos').where('id', '=', producto.id).update(producto)
         .then (()=>{
@@ -50,8 +52,9 @@ export const putProducto = (req,res)=>{
             console.log('Error en Insert:', e);
         })
 };
+exports.putProducto=putProducto
 
-export const deleteProducto = (req,res)=>{
+const deleteProducto = (req,res)=>{
     let id = req.params.id;
     console.log(id)
         knexProductos.from('productos').where('id', '=', id).del()
@@ -64,3 +67,4 @@ export const deleteProducto = (req,res)=>{
             console.log('Error en Delete:', e);
         })
 };
+exports.deleteProducto=deleteProducto

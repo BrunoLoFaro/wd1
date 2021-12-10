@@ -1,42 +1,65 @@
-import dotenv from 'dotenv'
-import { productosRouter, set } from './routes/productos.routes.js';
+const dotenv = require('dotenv')
+//import dotenv from 'dotenv'
+const routes = require('./routes/productos.routes.js')
+//import { productosRouter, set } from './routes/productos.routes.js';
 //import { handleError } from './middleware/errorHandler.js';
-import express from 'express';
+const express = require('express')
+//import express from 'express';
 const app = express();
-//import {generador} from './generador/productos.js'
-import handlebars from 'express-handlebars'
-import { Server } from "socket.io";
-import https from 'https'; 
-import moment from 'moment'
-import mongoose from 'mongoose'
-import * as autorModel from './models/autor.model.js'
-import * as productoModel from './models/producto.model.js'
-import * as mensajeModel from './models/mensaje.model.js'
-import {genProd, genMsj} from "./api/productos.js"
-import {normalize,schema} from 'normalizr'
-import util from 'util'
-import session from 'express-session'
-import MongoStore from 'connect-mongo'
-import passport from 'passport'
-import * as logInRoutes from "./routes/logInRoutes.js"
-import passport_facebook from 'passport-facebook';
+//import {generador} './generador/productos.js'
+const handlebars = require('express-handlebars')
+//import handlebars from 'express-handlebars'
+const socket_io = require('socket.io')
+const Server = socket_io.Server
+//import { Server } from "socket.io";
+const https = require('https')
+//import https from 'https'; 
+const moment = require('moment')
+//import moment from 'moment'
+const mongoose= require('mongoose')
+//import mongoose from 'mongoose'
+const autorModel = require('./models/autor.model.js')
+//import * as autorModel from './models/autor.model.js'
+const productoModel = require('./models/producto.model.js')
+//import * as productoModel from './models/producto.model.js'
+const mensajeModel = require('./models/mensaje.model.js')
+//import * as mensajeModel from './models/mensaje.model.js'
+const productos = require('./api/productos.js')
+//import {genProd, genMsj} from "./api/productos.js"
+const normalizr = require('normalizr')
+const normalize = normalizr.normalize
+const schema = normalizr.schema
+//import {normalize,schema} from 'normalizr'
+const util = require('util')
+//import util from 'util'
+const session = require('express-session')
+//import session from 'express-session'
+const MongoStore = require('connect-mongo')
+//import MongoStore from 'connect-mongo'
+const passport = require('passport')
+//import passport from 'passport'
+const logInRoutes = require('./routes/logInRoutes.js')
+//import * as logInRoutes from "./routes/logInRoutes.js"
+const passport_facebook = require('passport-facebook')
+//import passport_facebook from 'passport-facebook';
 const FacebookStrategy = passport_facebook.Strategy;
-import fs from 'fs'; 
-import fork from 'child_process'
+const fs = require('fs')
+//import fs from 'fs'; 
+const child_process = require('child_process')
+const fork = child_process.fork
+//import {fork} from 'child_process'
 //import routes from '/routes/logIn_functions.js'
+//import os from 'os'
+const os = require('os')
 
 dotenv.config({path: './config/.env'})
 
 let args = process.argv.slice(2);
 
-let PORT = args[0]
-let fb_client_id = args[1]
-let fb_client_secret = args[2]
-
-if(PORT === undefined) PORT = process.env.PORT 
-if(fb_client_id === undefined) fb_client_id = process.env.FACEBOOK_API_KEY
-if(fb_client_secret === undefined) fb_client_secret = process.env.FACEBOOK_API_SECRET
-
+let PORT = args[0] || process.env.PORT
+let fb_client_id = args[1] || process.env.FACEBOOK_API_KEY
+let fb_client_secret = args[2] || process.env.FACEBOOK_API_SECRET
+let mode = args[3] || 'FORK'
 
 process.on('exit',(code)=>{
     console.log(salida);
@@ -186,7 +209,7 @@ passport.deserializeUser((id, done)=>{
        })
         
         /*
-        genMsj.then((msjs_guardados)=>{
+        productos.genMsj.then((msjs_guardados)=>{
             for(let e of msjs_guardados)
             {
                 console.log(e)
@@ -203,10 +226,10 @@ passport.deserializeUser((id, done)=>{
         productoModel.productos.find({}).then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
         })
-        
-        genProd.then((productos_guardados)=>{
+        /*
+        productos.genProd.then((productos_guardados)=>{
             io.sockets.emit('productos', productos_guardados);
-        })
+        })*/
 
         socket.on('producto',data=>{
             console.log(data)
@@ -283,7 +306,7 @@ app.set('views', 'views'); // especifica el directorio de vistas
 app.set('view engine', 'hbs'); // registra el motor de plantillas
 app.use(express.json());
 app.use|(express.urlencoded({extended: true}));     
-app.use('/api',set());
+//app.use('/api',routes.set());
 app.use(express.static('views'));
 
 /*
@@ -324,18 +347,17 @@ app.get('/', checkAuthentication, logInRoutes.getRutaProtegida);
 
 
 
-app.get('/randoms', function (req, res, next) {
-    let cantidad
-    cantidad=(req.cant==undefined)?100000000:req.cant;
-    let calcRandom 
-    for(let i=0; i<cantidad; i++){
-        calcRandom = fork('./calcRandom.js');
-    }
+app.get('/random', function (req, res, next) {
 
-    calcRandom.send('start');
-    calcRandom.on('message', sum=>res.end(`La suma es ${sum}`));
-    console.log('Es no bloqueante!');
+    let cant = req.query.cant || 100000000
+    let childProcess = fork('calcRandom')
+
+    childProcess.send({cantidad:cant})
+    childProcess.on('message',obj=>{
+        res.send(obj.result)
+    })
  });
+
 
  app.get('/info', function (req, res, next) {
     let platform = process.platform
@@ -343,6 +365,7 @@ app.get('/randoms', function (req, res, next) {
     let memory = process.memoryUsage()
     let execPath = process.execPath
     let pid = process.pid
+    const numCPUs = os.cpus().length;
 
     let data={
         platform,
@@ -350,9 +373,10 @@ app.get('/randoms', function (req, res, next) {
         version,
         memory,
         execPath,
-        pid
+        pid,
+        numCPUs
     }
-    res.render('info',{data});//, {layout: true},{data}
+    res.render('info',{data});
  });
 
 app.get('*', logInRoutes.failRoute);

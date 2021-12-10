@@ -1,12 +1,14 @@
-export function getLogout(req, res){
+function getLogout(req, res){
     req.logout();
     res.redirect('/register');
 }
+exports.getLogout=getLogout
 
-export function failRoute(req, res){
+function failRoute(req, res){
     res.status(404).send('Ruta no encontrada');
 }
-
-export function getRutaProtegida(req, res){
+exports.failRoute=failRoute
+function getRutaProtegida(req, res){
     res.send('<h1>Pude ingresar a la ruta protegida</h1>');
 }
+exports.getRutaProtegida=getRutaProtegida
