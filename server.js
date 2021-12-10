@@ -1,56 +1,33 @@
 const dotenv = require('dotenv')
-//import dotenv from 'dotenv'
 const routes = require('./routes/productos.routes.js')
-//import { productosRouter, set } from './routes/productos.routes.js';
-//import { handleError } from './middleware/errorHandler.js';
 const express = require('express')
-//import express from 'express';
 const app = express();
-//import {generador} './generador/productos.js'
 const handlebars = require('express-handlebars')
-//import handlebars from 'express-handlebars'
 const socket_io = require('socket.io')
 const Server = socket_io.Server
-//import { Server } from "socket.io";
 const https = require('https')
-//import https from 'https'; 
 const moment = require('moment')
-//import moment from 'moment'
 const mongoose= require('mongoose')
-//import mongoose from 'mongoose'
 const autorModel = require('./models/autor.model.js')
-//import * as autorModel from './models/autor.model.js'
 const productoModel = require('./models/producto.model.js')
-//import * as productoModel from './models/producto.model.js'
 const mensajeModel = require('./models/mensaje.model.js')
-//import * as mensajeModel from './models/mensaje.model.js'
 const productos = require('./api/productos.js')
-//import {genProd, genMsj} from "./api/productos.js"
 const normalizr = require('normalizr')
 const normalize = normalizr.normalize
 const schema = normalizr.schema
-//import {normalize,schema} from 'normalizr'
 const util = require('util')
-//import util from 'util'
 const session = require('express-session')
-//import session from 'express-session'
 const MongoStore = require('connect-mongo')
-//import MongoStore from 'connect-mongo'
 const passport = require('passport')
-//import passport from 'passport'
 const logInRoutes = require('./routes/logInRoutes.js')
-//import * as logInRoutes from "./routes/logInRoutes.js"
 const passport_facebook = require('passport-facebook')
-//import passport_facebook from 'passport-facebook';
 const FacebookStrategy = passport_facebook.Strategy;
 const fs = require('fs')
-//import fs from 'fs'; 
 const child_process = require('child_process')
 const fork = child_process.fork
-//import {fork} from 'child_process'
-//import routes from '/routes/logIn_functions.js'
-//import os from 'os'
 const os = require('os')
+const cluster = require('cluster')
+const numCPUs = os.cpus().length;
 
 dotenv.config({path: './config/.env'})
 
@@ -365,7 +342,6 @@ app.get('/random', function (req, res, next) {
     let memory = process.memoryUsage()
     let execPath = process.execPath
     let pid = process.pid
-    const numCPUs = os.cpus().length;
 
     let data={
         platform,

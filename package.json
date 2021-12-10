@@ -28,8 +28,9 @@
     "sqlite3": "^5.0.2"
   },
   "scripts": {
-    "start": "node proyecto.js",
-    "dev": "start mongo.bat && node server.js"
+    "start": "node server.js",
+    "dev": "start mongo.bat && node server.js",
+    "prod": "forever start server.js"
   },
   "engines": {
     "node": ">=14.0.0",
