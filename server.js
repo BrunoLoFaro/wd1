@@ -12,9 +12,7 @@ const autorModel = require('./models/autor.model.js')
 const productoModel = require('./models/producto.model.js')
 const mensajeModel = require('./models/mensaje.model.js')
 const productos = require('./api/productos.js')
-const normalizr = require('normalizr')
-const normalize = normalizr.normalize
-const schema = normalizr.schema
+const {normalize, schema} = require('normalizr');
 const util = require('util')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')
@@ -28,12 +26,40 @@ const fork = child_process.fork
 const os = require('os')
 const cluster = require('cluster')
 const numCPUs = os.cpus().length;
+const compression = require('compression')
+
+const log4js = require("log4js");
+
+log4js.configure({
+    appenders: {
+      fileWarnAppender: { type: "file", filename: 'warn.log' },
+      fileErrorAppender: { type: "file", filename: 'error.log' },
+      justWarns: { type: 'logLevelFilter', appender: 'fileWarnAppender', level: 'warn' },
+      consoleAppender: { type: "console" }
+    },
+    categories: {
+      default: { appenders: ["consoleAppender"], level: "info" },
+      console: { appenders: ["consoleAppender"], level: "info" },
+      file: { appenders: ["justWarns"], level: "warn"},
+    }
+  });
+   
+  const logger = log4js.getLogger();//default
+logger.info("Print info");
+logger.warn("Print warn");
+logger.error("Print error");
+
+const loggerFile = log4js.getLogger('file');//solo warn
+loggerFile.info("Print info");
+loggerFile.warn("Print warn");
+loggerFile.error("Print error");
+
 
 dotenv.config({path: './config/.env'})
 
 let args = process.argv.slice(2);
 
-let PORT = args[0] || process.env.PORT
+let PORT = parseInt(args[0]) || process.env.PORT
 let fb_client_id = args[1] || process.env.FACEBOOK_API_KEY
 let fb_client_secret = args[2] || process.env.FACEBOOK_API_SECRET
 let mode = args[3] || 'FORK'
@@ -90,12 +116,13 @@ const usuarios = [];
 
 app.use(passport.initialize());
 app.use(passport.session());
+//app.use(compression());
 
 
 passport.use(new FacebookStrategy({
     clientID: fb_client_id,
     clientSecret: fb_client_secret,
-    callbackURL: `https://localhost:8443/auth/facebook/datos`,
+    callbackURL: `https://localhost:${PORT}/auth/facebook/datos`,
     profileFields: ['id','name','emails','photos']
   },
   function(accessToken, refreshToken, profile, cb) {
@@ -284,7 +311,7 @@ app.set('view engine', 'hbs'); // registra el motor de plantillas
 app.use(express.json());
 app.use|(express.urlencoded({extended: true}));     
 //app.use('/api',routes.set());
-app.use(express.static('views'));
+//app.use(express.static('views'));
 
 /*
 app.get('/mainPage', (req,res)=>{
@@ -355,6 +382,11 @@ app.get('/random', function (req, res, next) {
     res.render('info',{data});
  });
 
+ app.get('/datos', (req, res)=>{
+    console.log(`Port: ${PORT} -> Fyh: ${moment().format('DD/MM/YYYY HH:mm')}`);
+    res.send(`Servidor express <span style="color: blueviolet;">(Nginx)</span> en ${PORT} - PID ${process.pid} - ${moment().format('DD/MM/YYYY HH:mm')}`);
+});
+ 
 app.get('*', logInRoutes.failRoute);
 
 
