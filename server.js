@@ -24,10 +24,8 @@ const fs = require('fs')
 const child_process = require('child_process')
 const fork = child_process.fork
 const os = require('os')
-const cluster = require('cluster')
 const numCPUs = os.cpus().length;
 const compression = require('compression')
-
 const log4js = require("log4js");
 
 log4js.configure({
@@ -43,40 +41,42 @@ log4js.configure({
       file: { appenders: ["justWarns"], level: "warn"},
     }
   });
-   
+
   const logger = log4js.getLogger();//default
-logger.info("Print info");
-logger.warn("Print warn");
-logger.error("Print error");
-
-const loggerFile = log4js.getLogger('file');//solo warn
-loggerFile.info("Print info");
-loggerFile.warn("Print warn");
-loggerFile.error("Print error");
-
+  const loggerFile = log4js.getLogger('file');//solo warn
+  
 
 dotenv.config({path: './config/.env'})
 
-let args = process.argv.slice(2);
+let args = process.argv.slice(2);// Me quedo con los argumentos que me sirven
 
+/*
+parametros: 
+    port 
+    modo    (fork o cluster) 
+    fb_client_id
+    fb_client_secret
+*/
 let PORT = parseInt(args[0]) || process.env.PORT
-let fb_client_id = args[1] || process.env.FACEBOOK_API_KEY
-let fb_client_secret = args[2] || process.env.FACEBOOK_API_SECRET
-let mode = args[3] || 'FORK'
+loggerFile.warn(PORT)
+let mode = args[1] || 'FORK'
+let fb_client_id = args[2] || process.env.FACEBOOK_API_KEY
+let fb_client_secret = args[3] || process.env.FACEBOOK_API_SECRET
 
 process.on('exit',(code)=>{
-    console.log(salida);
+    logger.info("Salida");
     if (code != 0) {
-        console.log('Codigo de salida: ', code);
+        logger.info('Codigo de salida: ', code);
     }
 });
 
+//https es necesario para la auth con facebook
 const httpsOptions = {
     key: fs.readFileSync('./sslcert/cert.key'),
     cert: fs.readFileSync('./sslcert/cert.pem')
 }
 
-
+//"modelo" para mongo
 const authorSchema = new schema.Entity('authors')
 const textSchema = new schema.Entity('texts')
 const creadoEnSchema = new schema.Entity('creadoEn')
@@ -94,6 +94,7 @@ const holdingMensajesSchema = new schema.Entity('holding',{
     mensajes:[mensajeSchema]
 })
 
+//imprime objetos dentro de objetos segun depth
 function print(objeto, depth) {
     console.log(util.inspect(objeto,false,depth,true))
 }
@@ -157,17 +158,18 @@ async function CRUD (){
               useUnifiedTopology: true,
               serverSelectionTimeoutMS: 1000
             })    
-        console.log('Conectado a la base de datos...');
+            logger.info('Conectado a la base de datos')
         }
     catch(error) {
-        console.log("db not running")
+        logger.error('db not running')
+        loggerFile.error('db not running')
         ///throw `Error: ${error}`;
     }
 }
 
     const server = https.createServer(httpsOptions, app)
         .listen(PORT, () => {
-            console.log('Server corriendo en ' + PORT)
+            logger.info('Server corriendo en ' + PORT)
         })
 
 const io = new Server(server);
@@ -249,21 +251,19 @@ passport.deserializeUser((id, done)=>{
                 const productoSaveModel = new productoModel.productos(prod)
                 productoSaveModel.save()
                 .then(()=>{
-                    console.log(prod)
                     io.sockets.emit('producto',data)
                 })
         })
         socket.on('productoElim',nombre=>{
             productoModel.productos.deleteMany({nombre:nombre})
                 .then((e)=>{
-                    console.log(e)
                     productoModel.productos.find({}).then((productos_guardados)=>{
                         //console.log(productos_guardados)
                     io.sockets.emit('productos', productos_guardados);
                 })
             })
             .catch((e)=>{
-                console.log(e)
+                logger.warning('error al eliminar producto ',e)
             })
         })
 
@@ -275,7 +275,7 @@ passport.deserializeUser((id, done)=>{
                 })
             })
             .catch((e)=>{
-                console.log(e)
+                logger.warning('error al eliminar mensaje ',e)
             })
         })
         socket.on('nuevo-mensaje', (mensaje)=>{
@@ -289,14 +289,15 @@ passport.deserializeUser((id, done)=>{
             })
             .catch(e=>{
                 //next(e)
-                console.log('Error en Insert:', e);
+                logger.warning('error en insert',e)
             })
         })
     })
 })
 
-server.on('error', error=>console.log('Error en servidor', error));
+server.on('error', error=>logger.warning('error en servidor',e));
 
+//handlebars. Nexo entre back y front
 app.engine(
     "hbs",
     handlebars({
@@ -306,12 +307,13 @@ app.engine(
         partialsDir: "views/partials"
     })
 )
+
 app.set('views', 'views'); // especifica el directorio de vistas
 app.set('view engine', 'hbs'); // registra el motor de plantillas
 app.use(express.json());
 app.use|(express.urlencoded({extended: true}));     
 //app.use('/api',routes.set());
-//app.use(express.static('views'));
+app.use(express.static('views'));
 
 /*
 app.get('/mainPage', (req,res)=>{
@@ -326,7 +328,6 @@ app.get('/mainPage', (req,res)=>{
     }
 })
 */
-
 
 app.get('/auth/facebook/datos',
   passport.authenticate('facebook', { failureRedirect: '/error-login.html' }),
@@ -383,7 +384,7 @@ app.get('/random', function (req, res, next) {
  });
 
  app.get('/datos', (req, res)=>{
-    console.log(`Port: ${PORT} -> Fyh: ${moment().format('DD/MM/YYYY HH:mm')}`);
+    logger.warning(`Port: ${PORT} -> Fyh: ${moment().format('DD/MM/YYYY HH:mm')}`)
     res.send(`Servidor express <span style="color: blueviolet;">(Nginx)</span> en ${PORT} - PID ${process.pid} - ${moment().format('DD/MM/YYYY HH:mm')}`);
 });
  
