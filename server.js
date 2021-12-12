@@ -1,7 +1,6 @@
 const dotenv = require('dotenv')
 const routes = require('./routes/productos.routes.js')
 const express = require('express')
-const app = express();
 const handlebars = require('express-handlebars')
 const socket_io = require('socket.io')
 const Server = socket_io.Server
@@ -59,7 +58,7 @@ parametros:
 */
 let PORT = parseInt(args[0]) || process.env.PORT
 loggerFile.warn(PORT)
-let mode = args[1] || 'FORK'
+let modo = args[1] || 'FORK'
 let fb_client_id = args[2] || process.env.FACEBOOK_API_KEY
 let fb_client_secret = args[3] || process.env.FACEBOOK_API_SECRET
 
@@ -99,214 +98,18 @@ function print(objeto, depth) {
     console.log(util.inspect(objeto,false,depth,true))
 }
 
-app.use(session({
-    store: MongoStore.create({
-        mongoUrl: 'mongodb://localhost/sesiones'
-    }),
-    secret: 'secreto',
-    resave: true,
-    saveUninitialized: true,
-    rolling: true, // <-- Set `rolling` to `true`
-    cookie: {
-      httpOnly: false,//true
-      maxAge: 10//60000
-    }
-}));
 
-const usuarios = [];
-
-app.use(passport.initialize());
-app.use(passport.session());
-//app.use(compression());
-
-
-passport.use(new FacebookStrategy({
-    clientID: fb_client_id,
-    clientSecret: fb_client_secret,
-    callbackURL: `https://localhost:${PORT}/auth/facebook/datos`,
-    profileFields: ['id','name','emails','photos']
-  },
-  function(accessToken, refreshToken, profile, cb) {
-      let indice = usuarios.findIndex(e=>e.facebookId  == profile.id);
-      if (indice != -1) {
-          //console.log("encontré")
-        return cb(null, usuarios[indice]);
-      }
-      else{
-        //console.log("no encontré")
-        let userData = profile._json
-        let nuevoUsuario = {
-            facebookId: userData.id, 
-            name: userData.first_name+' '+userData.last_name, 
-            picture: userData.picture.data.url,
-        }
-        usuarios.push(nuevoUsuario);
-        return cb(null, nuevoUsuario)
-      }
-  }
-));
-
-
-CRUD();
-
-async function CRUD (){
-    try {
-        const URI = 'mongodb://localhost:27017/ecommerce';
-        await mongoose.connect(URI, 
-            { 
-              useNewUrlParser: true,
-              useUnifiedTopology: true,
-              serverSelectionTimeoutMS: 1000
-            })    
-            logger.info('Conectado a la base de datos')
-        }
-    catch(error) {
-        logger.error('db not running')
-        loggerFile.error('db not running')
-        ///throw `Error: ${error}`;
-    }
+if(modo=='CLUSTER' && cluster.isMaster){
+    for(let i=0;i<numCPUs;i++)
+        cluster.fork()
+    cluster.on('exit',worker =>{
+        logger.info('worker', worker.process.pid,'died', new Date().toLocaleString())
+        cluster.fork()
+    })
 }
+else{
 
-    const server = https.createServer(httpsOptions, app)
-        .listen(PORT, () => {
-            logger.info('Server corriendo en ' + PORT)
-        })
-
-const io = new Server(server);
-
-passport.serializeUser((user, done)=>{
-    done(null, user.facebookId);
-});
-
-passport.deserializeUser((id, done)=>{
-    let usuario = usuarios[usuarios.findIndex(e=>e.facebookId == id)];
-    done(null, usuario);
-}); 
-
-//-----websocket triggers-----
-    io.on('connection', (socket)=> {
-
-        //console.log(`conectado, cliente: ${socket.id}`)
-
-
-        mensajeModel.mensajes.find({}).then((mensajes)=>{
-            io.sockets.emit('mensajes', mensajes);
-            
-            let holdingMensajes={
-                id:1212,
-                mensajes:mensajes
-            }
-            
-            const holdingMensajesNormalizado = normalize(holdingMensajes,holdingMensajesSchema)
-            //console.log("sin normalizar")
-            //print(holdingMensajes);
-            //console.log("\n\n\n")
-            //console.log("normalizado")
-            //print(holdingMensajesNormalizado);
-            
-            let longAntes = JSON.stringify(holdingMensajes).length
-            let longDespues = JSON.stringify(holdingMensajesNormalizado).length
-            //console.log("\n\n\n")
-            //console.log("\n\n\n")
-            //console.log(longAntes)
-            //console.log(longDespues)
-            //console.log('Compresión:', `${Math.trunc((1 - (longDespues / longAntes)) * 100)} %`);
-        
-       })
-        
-        /*
-        productos.genMsj.then((msjs_guardados)=>{
-            for(let e of msjs_guardados)
-            {
-                console.log(e)
-                const mensajeSaveModel = new mensajeModel.mensajes(e)
-                mensajeSaveModel.save()
-                .then(()=>{
-                    console.log(`${e} guardado`)
-                })
-            }                
-
-            //io.sockets.emit('mensajes', msjs_guardados)
-        })*/
-        
-        productoModel.productos.find({}).then((productos_guardados)=>{
-            io.sockets.emit('productos', productos_guardados);
-        })
-        /*
-        productos.genProd.then((productos_guardados)=>{
-            io.sockets.emit('productos', productos_guardados);
-        })*/
-
-        socket.on('producto',data=>{
-            console.log(data)
-            let prod={
-                id: 0,
-                timestamp: "",
-                nombre: data.nombre,
-                descripcion: "",
-                codigo: "",
-                foto: data.foto,
-                precio: data.precio
-            }
-                const productoSaveModel = new productoModel.productos(prod)
-                productoSaveModel.save()
-                .then(()=>{
-                    io.sockets.emit('producto',data)
-                })
-        })
-        socket.on('productoElim',nombre=>{
-            productoModel.productos.deleteMany({nombre:nombre})
-                .then((e)=>{
-                    productoModel.productos.find({}).then((productos_guardados)=>{
-                        //console.log(productos_guardados)
-                    io.sockets.emit('productos', productos_guardados);
-                })
-            })
-            .catch((e)=>{
-                logger.warning('error al eliminar producto ',e)
-            })
-        })
-
-        socket.on('mensajeElim',tiempo=>{
-            mensajeModel.mensajes.deleteOne({creadoEn:tiempo})
-                .then((e)=>{
-                    mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
-                    io.sockets.emit('mensajes', mensajes_guardados);
-                })
-            })
-            .catch((e)=>{
-                logger.warning('error al eliminar mensaje ',e)
-            })
-        })
-        socket.on('nuevo-mensaje', (mensaje)=>{
-            let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
-            mensaje.creadoEn= tiempo
-            const mensajeSaveModel = new mensajeModel.mensajes(mensaje)
-            mensajeSaveModel.save()
-            .then((e)=>{
-                mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
-                io.sockets.emit('mensajes', mensajes_guardados);
-            })
-            .catch(e=>{
-                //next(e)
-                logger.warning('error en insert',e)
-            })
-        })
-    })
-})
-
-server.on('error', error=>logger.warning('error en servidor',e));
-
-//handlebars. Nexo entre back y front
-app.engine(
-    "hbs",
-    handlebars({
-        extname: ".hbs",
-        defaultLayout: "index.hbs",
-        layoutsDir: "views/layouts",
-        partialsDir: "views/partials"
-    })
-)
+const app = express();
 
 app.set('views', 'views'); // especifica el directorio de vistas
 app.set('view engine', 'hbs'); // registra el motor de plantillas
@@ -314,6 +117,9 @@ app.use(express.json());
 app.use|(express.urlencoded({extended: true}));     
 //app.use('/api',routes.set());
 app.use(express.static('views'));
+
+
+
 
 /*
 app.get('/mainPage', (req,res)=>{
@@ -391,6 +197,8 @@ app.get('/random', function (req, res, next) {
 app.get('*', logInRoutes.failRoute);
 
 
+
+
 function checkAuthentication(req, res, next){
     if (req.isAuthenticated()){
         next();
@@ -398,3 +206,215 @@ function checkAuthentication(req, res, next){
         res.redirect('/auth/facebook/datos');
     }
 }
+
+app.use(session({
+    store: MongoStore.create({
+        mongoUrl: 'mongodb://localhost/sesiones'
+    }),
+    secret: 'secreto',
+    resave: true,
+    saveUninitialized: true,
+    rolling: true, // <-- Set `rolling` to `true`
+    cookie: {
+      httpOnly: false,//true
+      maxAge: 10//60000
+    }
+}));
+
+const usuarios = [];
+
+app.use(passport.initialize());
+app.use(passport.session());
+//app.use(compression());
+const server = https.createServer(httpsOptions, app)
+.listen(PORT, () => {
+    logger.info('Server corriendo en ' + PORT)
+})
+server.on('error', error=>logger.warning('error en servidor',e));
+
+const io = new Server(server);
+
+//-----websocket triggers-----
+io.on('connection', (socket)=> {
+
+    //console.log(`conectado, cliente: ${socket.id}`)
+
+
+    mensajeModel.mensajes.find({}).then((mensajes)=>{
+        io.sockets.emit('mensajes', mensajes);
+        
+        let holdingMensajes={
+            id:1212,
+            mensajes:mensajes
+        }
+        
+        const holdingMensajesNormalizado = normalize(holdingMensajes,holdingMensajesSchema)
+        //console.log("sin normalizar")
+        //print(holdingMensajes);
+        //console.log("\n\n\n")
+        //console.log("normalizado")
+        //print(holdingMensajesNormalizado);
+        
+        let longAntes = JSON.stringify(holdingMensajes).length
+        let longDespues = JSON.stringify(holdingMensajesNormalizado).length
+        //console.log("\n\n\n")
+        //console.log("\n\n\n")
+        //console.log(longAntes)
+        //console.log(longDespues)
+        //console.log('Compresión:', `${Math.trunc((1 - (longDespues / longAntes)) * 100)} %`);
+    
+   })
+    
+    /*
+    productos.genMsj.then((msjs_guardados)=>{
+        for(let e of msjs_guardados)
+        {
+            console.log(e)
+            const mensajeSaveModel = new mensajeModel.mensajes(e)
+            mensajeSaveModel.save()
+            .then(()=>{
+                console.log(`${e} guardado`)
+            })
+        }                
+
+        //io.sockets.emit('mensajes', msjs_guardados)
+    })*/
+    
+    productoModel.productos.find({}).then((productos_guardados)=>{
+        io.sockets.emit('productos', productos_guardados);
+    })
+    /*
+    productos.genProd.then((productos_guardados)=>{
+        io.sockets.emit('productos', productos_guardados);
+    })*/
+
+    socket.on('producto',data=>{
+        console.log(data)
+        let prod={
+            id: 0,
+            timestamp: "",
+            nombre: data.nombre,
+            descripcion: "",
+            codigo: "",
+            foto: data.foto,
+            precio: data.precio
+        }
+            const productoSaveModel = new productoModel.productos(prod)
+            productoSaveModel.save()
+            .then(()=>{
+                io.sockets.emit('producto',data)
+            })
+    })
+    socket.on('productoElim',nombre=>{
+        productoModel.productos.deleteMany({nombre:nombre})
+            .then((e)=>{
+                productoModel.productos.find({}).then((productos_guardados)=>{
+                    //console.log(productos_guardados)
+                io.sockets.emit('productos', productos_guardados);
+            })
+        })
+        .catch((e)=>{
+            logger.warning('error al eliminar producto ',e)
+        })
+    })
+
+    socket.on('mensajeElim',tiempo=>{
+        mensajeModel.mensajes.deleteOne({creadoEn:tiempo})
+            .then((e)=>{
+                mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
+                io.sockets.emit('mensajes', mensajes_guardados);
+            })
+        })
+        .catch((e)=>{
+            logger.warning('error al eliminar mensaje ',e)
+        })
+    })
+    socket.on('nuevo-mensaje', (mensaje)=>{
+        let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
+        mensaje.creadoEn= tiempo
+        const mensajeSaveModel = new mensajeModel.mensajes(mensaje)
+        mensajeSaveModel.save()
+        .then((e)=>{
+            mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
+            io.sockets.emit('mensajes', mensajes_guardados);
+        })
+        .catch(e=>{
+            //next(e)
+            logger.warning('error en insert',e)
+        })
+    })
+})
+})
+
+//handlebars. Nexo entre back y front
+app.engine(
+    "hbs",
+    handlebars({
+        extname: ".hbs",
+        defaultLayout: "index.hbs",
+        layoutsDir: "views/layouts",
+        partialsDir: "views/partials"
+    })
+)
+
+
+}
+
+passport.use(new FacebookStrategy({
+    clientID: fb_client_id,
+    clientSecret: fb_client_secret,
+    callbackURL: `https://localhost:${PORT}/auth/facebook/datos`,
+    profileFields: ['id','name','emails','photos']
+  },
+  function(accessToken, refreshToken, profile, cb) {
+      let indice = usuarios.findIndex(e=>e.facebookId  == profile.id);
+      if (indice != -1) {
+          //console.log("encontré")
+        return cb(null, usuarios[indice]);
+      }
+      else{
+        //console.log("no encontré")
+        let userData = profile._json
+        let nuevoUsuario = {
+            facebookId: userData.id, 
+            name: userData.first_name+' '+userData.last_name, 
+            picture: userData.picture.data.url,
+        }
+        usuarios.push(nuevoUsuario);
+        return cb(null, nuevoUsuario)
+      }
+  }
+));
+
+
+CRUD();
+
+async function CRUD (){
+    try {
+        const URI = 'mongodb://localhost:27017/ecommerce';
+        await mongoose.connect(URI, 
+            { 
+              useNewUrlParser: true,
+              useUnifiedTopology: true,
+              serverSelectionTimeoutMS: 1000
+            })    
+            logger.info('Conectado a la base de datos')
+        }
+    catch(error) {
+        logger.error('db not running')
+        loggerFile.error('db not running')
+        ///throw `Error: ${error}`;
+    }
+}
+
+
+passport.serializeUser((user, done)=>{
+    done(null, user.facebookId);
+});
+
+passport.deserializeUser((id, done)=>{
+    let usuario = usuarios[usuarios.findIndex(e=>e.facebookId == id)];
+    done(null, usuario);
+}); 
+
+
