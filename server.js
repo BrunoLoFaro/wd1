@@ -22,11 +22,13 @@ const FacebookStrategy = passport_facebook.Strategy;
 const fs = require('fs')
 const child_process = require('child_process')
 const fork = child_process.fork
+const cluster = require('cluster');
 const os = require('os')
 const numCPUs = os.cpus().length;
 const compression = require('compression')
 const log4js = require("log4js");
 
+//logger
 log4js.configure({
     appenders: {
       fileWarnAppender: { type: "file", filename: 'warn.log' },
@@ -159,14 +161,14 @@ app.get('/', checkAuthentication, logInRoutes.getRutaProtegida);
 
 
 app.get('/random', function (req, res, next) {
-
-    let cant = req.query.cant || 100000000
+//desactivo el child process
+    /*let cant = req.query.cant || 100000000
     let childProcess = fork('calcRandom')
 
     childProcess.send({cantidad:cant})
     childProcess.on('message',obj=>{
         res.send(obj.result)
-    })
+    })*/
  });
 
 
@@ -186,6 +188,7 @@ app.get('/random', function (req, res, next) {
         pid,
         numCPUs
     }
+    logger.info(data)
     res.render('info',{data});
  });
 
@@ -406,7 +409,6 @@ async function CRUD (){
         ///throw `Error: ${error}`;
     }
 }
-
 
 passport.serializeUser((user, done)=>{
     done(null, user.facebookId);
