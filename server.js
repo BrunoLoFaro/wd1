@@ -27,7 +27,7 @@ const os = require('os')
 const numCPUs = os.cpus().length;
 const compression = require('compression')
 const log4js = require("log4js");
-
+//deployed in heroku
 const usuarios = [];
 
 //logger
