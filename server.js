@@ -28,6 +28,8 @@ const numCPUs = os.cpus().length;
 const compression = require('compression')
 const log4js = require("log4js");
 
+const usuarios = [];
+
 //logger
 log4js.configure({
     appenders: {
@@ -77,6 +79,7 @@ const httpsOptions = {
     cert: fs.readFileSync('./sslcert/cert.pem')
 }
 
+
 //"modelo" para mongo
 const authorSchema = new schema.Entity('authors')
 const textSchema = new schema.Entity('texts')
@@ -95,12 +98,12 @@ const holdingMensajesSchema = new schema.Entity('holding',{
     mensajes:[mensajeSchema]
 })
 
-//imprime objetos dentro de objetos segun depth
+//Funcion auxiliar. Imprime objetos dentro de objetos segun depth
 function print(objeto, depth) {
     console.log(util.inspect(objeto,false,depth,true))
 }
 
-
+//modos de ejecucion. Usi de uno o varios nucleos
 if(modo=='CLUSTER' && cluster.isMaster){
     for(let i=0;i<numCPUs;i++)
         cluster.fork()
@@ -113,15 +116,15 @@ else{
 
 const app = express();
 
+//config del motor de plantillas
 app.set('views', 'views'); // especifica el directorio de vistas
 app.set('view engine', 'hbs'); // registra el motor de plantillas
+
+//middlewares
 app.use(express.json());
 app.use|(express.urlencoded({extended: true}));     
 //app.use('/api',routes.set());
 app.use(express.static('views'));
-
-
-
 
 /*
 app.get('/mainPage', (req,res)=>{
@@ -136,7 +139,27 @@ app.get('/mainPage', (req,res)=>{
     }
 })
 */
+//guardo las sesiones en mongo
+app.use(session({
+    store: MongoStore.create({
+        mongoUrl: 'mongodb://localhost/sesiones'
+    }),
+    secret: 'secreto',
+    resave: true,
+    saveUninitialized: true,
+    rolling: true, // <-- Set `rolling` to `true`
+    cookie: {
+      httpOnly: false,//true
+      maxAge: 10//60000
+    }
+}));
 
+//declaro middlewares
+app.use(passport.initialize());
+app.use(passport.session());
+//app.use(compression());
+
+//rutas
 app.get('/auth/facebook/datos',
   passport.authenticate('facebook', { failureRedirect: '/error-login.html' }),
   function(req, res) {
@@ -156,19 +179,27 @@ app.get('/vista-test', (req,res)=>{
 
 app.get('/logout', logInRoutes.getLogout);
 
-app.get('/', checkAuthentication, logInRoutes.getRutaProtegida);
+/*app.get('/middlewareEx', checkAuthentication, (req,res)=>{
+})
+
+function middleFunc(req,res){
+    console.log(req)
+}
+*/
+
+//app.get('/', checkAuthentication, logInRoutes.getRutaProtegida(req,res));
 
 
 
 app.get('/random', function (req, res, next) {
 //desactivo el child process
-    /*let cant = req.query.cant || 100000000
+    let cant = req.query.cant || 100000000
     let childProcess = fork('calcRandom')
 
     childProcess.send({cantidad:cant})
     childProcess.on('message',obj=>{
         res.send(obj.result)
-    })*/
+    })
  });
 
 
@@ -200,35 +231,7 @@ app.get('/random', function (req, res, next) {
 app.get('*', logInRoutes.failRoute);
 
 
-
-
-function checkAuthentication(req, res, next){
-    if (req.isAuthenticated()){
-        next();
-    } else {
-        res.redirect('/auth/facebook/datos');
-    }
-}
-
-app.use(session({
-    store: MongoStore.create({
-        mongoUrl: 'mongodb://localhost/sesiones'
-    }),
-    secret: 'secreto',
-    resave: true,
-    saveUninitialized: true,
-    rolling: true, // <-- Set `rolling` to `true`
-    cookie: {
-      httpOnly: false,//true
-      maxAge: 10//60000
-    }
-}));
-
-const usuarios = [];
-
-app.use(passport.initialize());
-app.use(passport.session());
-//app.use(compression());
+//creo el servidor
 const server = https.createServer(httpsOptions, app)
 .listen(PORT, () => {
     logger.info('Server corriendo en ' + PORT)
@@ -237,7 +240,9 @@ server.on('error', error=>logger.warning('error en servidor',e));
 
 const io = new Server(server);
 
+
 //-----websocket triggers-----
+//websockets. Nexo entre el back y el front
 io.on('connection', (socket)=> {
 
     //console.log(`conectado, cliente: ${socket.id}`)
@@ -349,7 +354,7 @@ io.on('connection', (socket)=> {
 })
 })
 
-//handlebars. Nexo entre back y front
+//handlebars. Motor de vistas. Envio vistas con info del back
 app.engine(
     "hbs",
     handlebars({
@@ -372,7 +377,7 @@ passport.use(new FacebookStrategy({
   function(accessToken, refreshToken, profile, cb) {
       let indice = usuarios.findIndex(e=>e.facebookId  == profile.id);
       if (indice != -1) {
-          //console.log("encontré")
+        //console.log("encontré")
         return cb(null, usuarios[indice]);
       }
       else{
@@ -392,6 +397,7 @@ passport.use(new FacebookStrategy({
 
 CRUD();
 
+//conexión a base de datos
 async function CRUD (){
     try {
         const URI = 'mongodb://localhost:27017/ecommerce';
@@ -410,6 +416,7 @@ async function CRUD (){
     }
 }
 
+//serializar y deserializar son parte de passport
 passport.serializeUser((user, done)=>{
     done(null, user.facebookId);
 });
@@ -419,4 +426,11 @@ passport.deserializeUser((id, done)=>{
     done(null, usuario);
 }); 
 
-
+//middleware auth function
+function checkAuthentication(req, res, next){
+    if (req.isAuthenticated()){
+        next();
+    } else {
+        res.redirect('/auth/facebook/datos');
+    }
+}

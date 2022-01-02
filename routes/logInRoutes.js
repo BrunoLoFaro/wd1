@@ -8,6 +8,7 @@ function failRoute(req, res){
     res.status(404).send('Ruta no encontrada');
 }
 exports.failRoute=failRoute
+
 function getRutaProtegida(req, res){
     res.send('<h1>Pude ingresar a la ruta protegida</h1>');
 }
