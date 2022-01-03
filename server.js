@@ -6,13 +6,13 @@ const socket_io = require('socket.io')
 const Server = socket_io.Server
 const https = require('https')
 const moment = require('moment')
-const mongoose= require('mongoose')
 const autorModel = require('./models/autor.model.js')
 const productoModel = require('./models/producto.model.js')
 const mensajeModel = require('./models/mensaje.model.js')
 const productos = require('./api/productos.js')
 const {normalize, schema} = require('normalizr');
 const util = require('util')
+const mongoose = require('mongoose')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')
 const passport = require('passport')
@@ -29,6 +29,24 @@ const compression = require('compression')
 const log4js = require("log4js");
 //deployed in heroku
 const usuarios = [];
+
+//conexion a db
+
+const url = `mongodb+srv://admin:1Z9zlnI1iOS7CBAP@cluster0.uinz0.mongodb.net/ecommerce?retryWrites=true&w=majority`;
+
+const connectionParams={ 
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000
+  } 
+mongoose.connect(url,connectionParams)
+    .then( () => {
+        console.log('Connected to database ')
+    })
+    .catch( (err) => {
+        console.error(`Error connecting to the database. \n${err}`);
+    })
+
 
 //logger
 log4js.configure({
@@ -289,6 +307,7 @@ io.on('connection', (socket)=> {
     })*/
     
     productoModel.productos.find({}).then((productos_guardados)=>{
+        console.log(productos_guardados)
         io.sockets.emit('productos', productos_guardados);
     })
     /*
@@ -394,27 +413,6 @@ passport.use(new FacebookStrategy({
   }
 ));
 
-
-CRUD();
-
-//conexión a base de datos
-async function CRUD (){
-    try {
-        const URI = 'mongodb://localhost:27017/ecommerce';
-        await mongoose.connect(URI, 
-            { 
-              useNewUrlParser: true,
-              useUnifiedTopology: true,
-              serverSelectionTimeoutMS: 1000
-            })    
-            logger.info('Conectado a la base de datos')
-        }
-    catch(error) {
-        logger.error('db not running')
-        loggerFile.error('db not running')
-        ///throw `Error: ${error}`;
-    }
-}
 
 //serializar y deserializar son parte de passport
 passport.serializeUser((user, done)=>{
