@@ -1,7 +1,7 @@
 const dotenv = require('dotenv')
 const routes = require('./routes/productos.routes.js')
 const express = require('express')
-const handlebars = require('express-handlebars')
+const { engine } = require('express-handlebars')
 const socket_io = require('socket.io')
 const Server = socket_io.Server
 const https = require('https')
@@ -78,7 +78,7 @@ parametros:
     fb_client_id
     fb_client_secret
 */
-let PORT = parseInt(args[0]) || process.env.PORT
+let PORT = parseInt(args[0]) || process.env.PORT || 8443
 loggerFile.warn(PORT)
 let modo = args[1] || 'FORK'
 let fb_client_id = args[2] || process.env.FACEBOOK_API_KEY
@@ -307,7 +307,6 @@ io.on('connection', (socket)=> {
     })*/
     
     productoModel.productos.find({}).then((productos_guardados)=>{
-        console.log(productos_guardados)
         io.sockets.emit('productos', productos_guardados);
     })
     /*
@@ -374,16 +373,12 @@ io.on('connection', (socket)=> {
 })
 
 //handlebars. Motor de vistas. Envio vistas con info del back
-app.engine(
-    "hbs",
-    handlebars({
-        extname: ".hbs",
-        defaultLayout: "index.hbs",
-        layoutsDir: "views/layouts",
-        partialsDir: "views/partials"
-    })
-)
+app.engine('hbs', engine({
+    defaultLayout: 'index',
+    extname: '.hbs'
+}));
 
+app.set('view engine', 'hbs');
 
 }
 
