@@ -78,7 +78,7 @@ parametros:
     fb_client_id
     fb_client_secret
 */
-let PORT = parseInt(args[0]) || process.env.PORT || 8443
+let PORT = parseInt(args[0]) || process.env.PORT
 loggerFile.warn(PORT)
 let modo = args[1] || 'FORK'
 let fb_client_id = args[2] || process.env.FACEBOOK_API_KEY
@@ -315,7 +315,7 @@ io.on('connection', (socket)=> {
     })*/
 
     socket.on('producto',data=>{
-        console.log(data)
+        //console.log(data)
         let prod={
             id: 0,
             timestamp: "",
