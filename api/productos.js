@@ -1,11 +1,11 @@
 //import {generadorProd, generadorMensaje} from'../generador/productos.js'
 //import {nextId,getFecha,getIndex} from '../util.js'
 
-const gProd = require('../generador/productos.js')
+const gProd = require('../util/generador/productos.js')
 let generadorProd = gProd.generadorProd
 let generadorMensaje = gProd.generadorMensaje
 
-const util = require('../util.js')
+const util = require('../util/util.js')
 let nextId = util.nextId
 let getFecha = util.getFecha
 let getIndex = util.getIndex
