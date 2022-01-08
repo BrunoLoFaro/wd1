@@ -391,7 +391,7 @@ app.set('view engine', 'hbs');
 passport.use(new FacebookStrategy({
     clientID: fb_client_id,
     clientSecret: fb_client_secret,
-    callbackURL: `https://localhost:${PORT}/auth/facebook/datos`,
+    callbackURL: `https://coderhouse--ecommerce.herokuapp.com/auth/facebook/datos`,
     profileFields: ['id','name','emails','photos']
   },
   function(accessToken, refreshToken, profile, cb) {
