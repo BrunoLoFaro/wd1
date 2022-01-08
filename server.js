@@ -163,9 +163,10 @@ app.get('/mainPage', (req,res)=>{
 })
 */
 //guardo las sesiones en mongo
+
 app.use(session({
     store: MongoStore.create({
-        mongoUrl: 'mongodb://localhost/sesiones'
+        mongoUrl: process.env.MONGODB_URI
     }),
     secret: 'secreto',
     resave: true,
