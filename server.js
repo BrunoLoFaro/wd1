@@ -31,9 +31,12 @@ const cors = require('cors')
 //deployed in heroku
 const usuarios = [];
 
+
+dotenv.config({path: './config/.env'})
+
 //conexion a db
 
-const url = `mongodb+srv://admin:1Z9zlnI1iOS7CBAP@cluster0.uinz0.mongodb.net/ecommerce?retryWrites=true&w=majority`;
+const url = process.env.MONGODB_URI
 
 const connectionParams={ 
     useNewUrlParser: true,
@@ -68,7 +71,7 @@ log4js.configure({
   const loggerFile = log4js.getLogger('file');//solo warn
   
 
-dotenv.config({path: './config/.env'})
+
 
 let args = process.argv.slice(2);// Me quedo con los argumentos que me sirven
 //line to commit
@@ -144,6 +147,7 @@ app.use(express.json());
 app.use|(express.urlencoded({extended: true}));     
 //app.use('/api',routes.set());
 app.use(express.static('views'));
+
 app.use(cors())
 /*
 app.get('/mainPage', (req,res)=>{
