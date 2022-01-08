@@ -27,6 +27,7 @@ const os = require('os')
 const numCPUs = os.cpus().length;
 const compression = require('compression')
 const log4js = require("log4js");
+const cors = require('cors')
 //deployed in heroku
 const usuarios = [];
 
@@ -143,7 +144,7 @@ app.use(express.json());
 app.use|(express.urlencoded({extended: true}));     
 //app.use('/api',routes.set());
 app.use(express.static('views'));
-
+app.use(cors())
 /*
 app.get('/mainPage', (req,res)=>{
     console.log("1")

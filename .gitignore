@@ -12,3 +12,5 @@ WiredTiger.lock
 WiredTiger.turtle
 
 mongod.lock
+
+config/
