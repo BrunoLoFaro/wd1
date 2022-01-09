@@ -28,6 +28,7 @@ const numCPUs = os.cpus().length;
 const compression = require('compression')
 const log4js = require("log4js");
 const cors = require('cors')
+const nodemailer = require('nodemailer')
 //deployed in heroku
 const usuarios = [];
 
@@ -251,7 +252,65 @@ app.get('/random', function (req, res, next) {
     logger.warning(`Port: ${PORT} -> Fyh: ${moment().format('DD/MM/YYYY HH:mm')}`)
     res.send(`Servidor express <span style="color: blueviolet;">(Nginx)</span> en ${PORT} - PID ${process.pid} - ${moment().format('DD/MM/YYYY HH:mm')}`);
 });
- 
+
+app.get('/mail', (req, res)=>{
+    
+let transporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: 'nels.yost71@ethereal.email', // generated ethereal user
+      pass: 'wMvBbSXGhrV12cT948', // generated ethereal password
+    },
+  });
+
+  // send mail with defined transport object
+  transporter.sendMail({
+    from: '"Servidor node', // sender address
+    to: "nels.yost71@ethereal.email", // list of receivers
+    subject: "Mail de prueba", // Subject line
+    text: "Hello world", // plain text body
+    html: "<b>Hello world!</b>", // html body
+  },(err,inf)=>{
+      if(err){
+      console.log(err)
+      return err
+      }
+  });
+
+    res.send({text:'mail mandado'})
+});
+
+app.get('/gmail', (req, res)=>{
+    
+    let transporter = nodemailer.createTransport({
+        service:"gmail",
+        auth: {
+          user: 'pruebam097@gmail.com', // generated ethereal user
+          pass: 'contra.de.prueba.11', // generated ethereal password
+        },
+      });
+    
+      // send mail with defined transport object
+      transporter.sendMail({
+        from: '"Servidor node', // sender address
+        to: "lofarobruno@gmail.com", // list of receivers
+        subject: "Mail de prueba", // Subject line
+        text: "Hello world", // plain text body
+        html: "<b>Hello world!</b>", // html body,
+        attachments:{
+            path: './warn.log'
+        }
+      },(err,inf)=>{
+          if(err){
+          console.log(err)
+          return err
+          }
+      });
+    
+        res.send({text:'mail mandado'})
+    });
 app.get('*', logInRoutes.failRoute);
 
 
@@ -413,7 +472,6 @@ passport.use(new FacebookStrategy({
       }
   }
 ));
-
 
 //serializar y deserializar son parte de passport
 passport.serializeUser((user, done)=>{
