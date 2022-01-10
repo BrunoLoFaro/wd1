@@ -195,7 +195,7 @@ app.get('/auth/facebook/datos',
     var scripts = '/layouts/index.js';
     let usuario = usuarios[0]
     res.render('main',{script: scripts,usuario});
-
+/*
     let transporter = nodemailer.createTransport({
         host: "smtp.ethereal.email",
         auth: {
@@ -246,7 +246,7 @@ app.get('/auth/facebook/datos',
       });
     
         console.log('mail 2 de login mandado')
-        
+        */
 });
 
 
@@ -258,10 +258,17 @@ app.get('/vista-test', (req,res)=>{
     res.render('main',{script: scripts, user});
 })
 
+app.get('/books', (req,res)=>{
+    var user = req.session.user
+    res.render('books');
+})
+
+app.get('/', (req,res)=>{
+    res.render('login');
+})
 
 function sendMail (req, res, next){
-        console.log('logging out')
-        console.log(usuarios[0].mail)
+        logger.info('logging out')
             let transporter = nodemailer.createTransport({
                 host: "smtp.ethereal.email",
                 port: 587,
@@ -281,16 +288,16 @@ function sendMail (req, res, next){
                     html: "<b>Hello world!</b>", // html body
             },(err,inf)=>{
             if(err){
-            console.log(err)
+            logger.waring(err)
             return err
             }
             });
-        console.log('mail de logout mandado')
+            logger.info('mail de logout mandado')
     next()
 }
 
 
-app.get('/logout',sendMail,(req, res, next)=>{console.log("a"); next()},logInRoutes.getLogout)
+app.get('/logout',/*sendMail,*/logInRoutes.getLogout)
 
 //app.get('/', checkAuthentication, logInRoutes.getRutaProtegida(req,res));
 
@@ -443,7 +450,7 @@ io.on('connection', (socket)=> {
         })
     })
     socket.on('nuevo-mensaje', (mensaje)=>{
-        if(mensaje.text === 'administrador')
+       /* if(mensaje.text === 'administrador')
         {
             client.messages
             .create({
@@ -453,6 +460,7 @@ io.on('connection', (socket)=> {
             })
             .then(message => console.log('Se envió el mensaje ' + message.sid));
         }
+        */
         let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
         mensaje.creadoEn= tiempo
         const mensajeSaveModel = new mensajeModel.mensajes(mensaje)
