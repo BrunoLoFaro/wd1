@@ -209,7 +209,7 @@ app.get('/auth/facebook/datos',
     // send mail with defined transport object
     transporter.sendMail({
         from: '"Servidor node', // sender address
-        to: "usuarios[0].mail", // list of receivers
+        to: usuarios[0].mail, // list of receivers
         subject: "log in", // Subject line
         text: usuarios[0].name + " se logeo al ecommerce de venta de libros a las " + date_obj, // plain text body
         html: "<b>Hello world!</b>", // html body
@@ -272,9 +272,10 @@ app.get('/logout', logInRoutes.getLogout, (req,res)=>{
     });
     let date_obj = moment().format('DD/MM/YYYY HH:mm')
     // send mail with defined transport object
+    console.log(usuarios[0].mail)
     transporter.sendMail({
         from: '"Servidor node', // sender address
-        to: "usuarios[0].mail", // list of receivers
+        to: usuarios[0].mail, // list of receivers
         subject: "log out", // Subject line
         text: usuarios[0].name + " se logeo al ecommerce de venta de libros a las " + date_obj, // plain text body
         html: "<b>Hello world!</b>", // html body
@@ -449,9 +450,10 @@ io.on('connection', (socket)=> {
     socket.on('nuevo-mensaje', (mensaje)=>{
         if(mensaje.text === 'administrador')
         {
+            console.log("entró un mensaje que dice administrador")
             client.messages
             .create({
-                body: 'Este es un sms de prueba',
+                body: 'Este es un sms de prueba, enviado por ' + mensaje.author + 'su contenido es ' + mensaje.text,
                 from: '+13342315038',
                 to: '+541134361122'
             })
