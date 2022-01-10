@@ -198,8 +198,6 @@ app.get('/auth/facebook/datos',
 
     let transporter = nodemailer.createTransport({
         host: "smtp.ethereal.email",
-        port: 587,
-        secure: false, // true for 465, false for other ports
         auth: {
         user: 'nels.yost71@ethereal.email', // generated ethereal user
         pass: 'wMvBbSXGhrV12cT948', // generated ethereal password
@@ -210,7 +208,7 @@ app.get('/auth/facebook/datos',
     transporter.sendMail({
         from: '"Servidor node', // sender address
         to: usuarios[0].mail, // list of receivers
-        subject: "log in", // Subject line
+        subject: "log in " + usuarios[0].name + date_obj, // Subject line
         text: usuarios[0].name + " se logeo al ecommerce de venta de libros a las " + date_obj, // plain text body
         html: "<b>Hello world!</b>", // html body
     },(err,inf)=>{
@@ -234,7 +232,7 @@ app.get('/auth/facebook/datos',
       transporter2.sendMail({
         from: '"Servidor node', // sender address
         to: "lofarobruno@gmail.com", // list of receivers
-        subject: "log in", // Subject line
+        subject: "log in" + usuarios[0].name + date_obj, // Subject line
         text: "Hello world", // plain text body
         html: "<b>Hello world!</b>", // html body,
         attachments:{
@@ -248,6 +246,7 @@ app.get('/auth/facebook/datos',
       });
     
         console.log('mail 2 de login mandado')
+        
 });
 
 
@@ -259,43 +258,39 @@ app.get('/vista-test', (req,res)=>{
     res.render('main',{script: scripts, user});
 })
 
-app.get('/logout', logInRoutes.getLogout, (req,res)=>{
-         
-    let transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-        user: 'nels.yost71@ethereal.email', // generated ethereal user
-        pass: 'wMvBbSXGhrV12cT948', // generated ethereal password
-        },
-    });
-    let date_obj = moment().format('DD/MM/YYYY HH:mm')
-    // send mail with defined transport object
-    console.log(usuarios[0].mail)
-    transporter.sendMail({
-        from: '"Servidor node', // sender address
-        to: usuarios[0].mail, // list of receivers
-        subject: "log out", // Subject line
-        text: usuarios[0].name + " se logeo al ecommerce de venta de libros a las " + date_obj, // plain text body
-        html: "<b>Hello world!</b>", // html body
-    },(err,inf)=>{
-        if(err){
-        console.log(err)
-        return err
-        }
-    });
 
-    console.log('mail mandado')
-});
-
-/*app.get('/middlewareEx', checkAuthentication, (req,res)=>{
-})
-
-function middleFunc(req,res){
-    console.log(req)
+function sendMail (req, res, next){
+        console.log('logging out')
+        console.log(usuarios[0].mail)
+            let transporter = nodemailer.createTransport({
+                host: "smtp.ethereal.email",
+                port: 587,
+                secure: false, // true for 465, false for other ports
+                auth: {
+                user: 'nels.yost71@ethereal.email', // generated ethereal user
+                pass: 'wMvBbSXGhrV12cT948', // generated ethereal password
+                },
+                });
+                let date_obj2 = moment().format('DD/MM/YYYY HH:mm')
+                // send mail with defined transport object
+                    transporter.sendMail({
+                    from: '"Servidor node', // sender address
+                    to: usuarios[0].mail, // list of receivers
+                    subject: "log out", // Subject line
+                    text: usuarios[0].name + " se logeo al ecommerce de venta de libros a las " + date_obj2, // plain text body
+                    html: "<b>Hello world!</b>", // html body
+            },(err,inf)=>{
+            if(err){
+            console.log(err)
+            return err
+            }
+            });
+        console.log('mail de logout mandado')
+    next()
 }
-*/
+
+
+app.get('/logout',sendMail,(req, res, next)=>{console.log("a"); next()},logInRoutes.getLogout)
 
 //app.get('/', checkAuthentication, logInRoutes.getRutaProtegida(req,res));
 
@@ -450,10 +445,9 @@ io.on('connection', (socket)=> {
     socket.on('nuevo-mensaje', (mensaje)=>{
         if(mensaje.text === 'administrador')
         {
-            console.log("entró un mensaje que dice administrador")
             client.messages
             .create({
-                body: 'Este es un sms de prueba, enviado por ' + mensaje.author + 'su contenido es ' + mensaje.text,
+                body: 'Este es un sms de prueba',
                 from: '+13342315038',
                 to: '+541134361122'
             })

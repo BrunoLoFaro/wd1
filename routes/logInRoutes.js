@@ -1,6 +1,7 @@
 function getLogout(req, res){
+    console.log("passed")
     req.logout();
-    res.redirect('/logout');
+    res.redirect('/register');
 }
 exports.getLogout=getLogout
 
