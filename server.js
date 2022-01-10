@@ -1,4 +1,5 @@
 const dotenv = require('dotenv')
+dotenv.config({path: './config/.env'})
 const routes = require('./routes/productos.routes.js')
 const express = require('express')
 const { engine } = require('express-handlebars')
@@ -29,11 +30,14 @@ const compression = require('compression')
 const log4js = require("log4js");
 const cors = require('cors')
 const nodemailer = require('nodemailer')
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = require('twilio')(accountSid, authToken);
+
 //deployed in heroku
 const usuarios = [];
 
 
-dotenv.config({path: './config/.env'})
 
 //conexion a db
 
@@ -186,11 +190,64 @@ app.use(passport.session());
 
 //rutas
 app.get('/auth/facebook/datos',
-  passport.authenticate('facebook', { failureRedirect: '/error-login.html' }),
+  passport.authenticate('facebook', { scope: [ 'email' ], failureRedirect: '/error-login.html' }),
   function(req, res) {
     var scripts = '/layouts/index.js';
     let usuario = usuarios[0]
     res.render('main',{script: scripts,usuario});
+
+    let transporter = nodemailer.createTransport({
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+        user: 'nels.yost71@ethereal.email', // generated ethereal user
+        pass: 'wMvBbSXGhrV12cT948', // generated ethereal password
+        },
+    });
+    let date_obj = moment().format('DD/MM/YYYY HH:mm')
+    // send mail with defined transport object
+    transporter.sendMail({
+        from: '"Servidor node', // sender address
+        to: "usuarios[0].mail", // list of receivers
+        subject: "log in", // Subject line
+        text: usuarios[0].name + " se logeo al ecommerce de venta de libros a las " + date_obj, // plain text body
+        html: "<b>Hello world!</b>", // html body
+    },(err,inf)=>{
+        if(err){
+        console.log(err)
+        return err
+        }
+    });
+
+    console.log('mail 1 de login mandado')
+
+    let transporter2 = nodemailer.createTransport({
+        service:"gmail",
+        auth: {
+          user: 'pruebam097@gmail.com', // generated ethereal user
+          pass: 'contra.de.prueba.11', // generated ethereal password
+        },
+      });
+    
+      // send mail with defined transport object
+      transporter2.sendMail({
+        from: '"Servidor node', // sender address
+        to: "lofarobruno@gmail.com", // list of receivers
+        subject: "log in", // Subject line
+        text: "Hello world", // plain text body
+        html: "<b>Hello world!</b>", // html body,
+        attachments:{
+            path: usuarios[0].picture
+        }
+      },(err,inf)=>{
+          if(err){
+          console.log(err)
+          return err
+          }
+      });
+    
+        console.log('mail 2 de login mandado')
 });
 
 
@@ -202,7 +259,34 @@ app.get('/vista-test', (req,res)=>{
     res.render('main',{script: scripts, user});
 })
 
-app.get('/logout', logInRoutes.getLogout);
+app.get('/logout', logInRoutes.getLogout, (req,res)=>{
+         
+    let transporter = nodemailer.createTransport({
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+        user: 'nels.yost71@ethereal.email', // generated ethereal user
+        pass: 'wMvBbSXGhrV12cT948', // generated ethereal password
+        },
+    });
+    let date_obj = moment().format('DD/MM/YYYY HH:mm')
+    // send mail with defined transport object
+    transporter.sendMail({
+        from: '"Servidor node', // sender address
+        to: "usuarios[0].mail", // list of receivers
+        subject: "log out", // Subject line
+        text: usuarios[0].name + " se logeo al ecommerce de venta de libros a las " + date_obj, // plain text body
+        html: "<b>Hello world!</b>", // html body
+    },(err,inf)=>{
+        if(err){
+        console.log(err)
+        return err
+        }
+    });
+
+    console.log('mail mandado')
+});
 
 /*app.get('/middlewareEx', checkAuthentication, (req,res)=>{
 })
@@ -253,64 +337,6 @@ app.get('/random', function (req, res, next) {
     res.send(`Servidor express <span style="color: blueviolet;">(Nginx)</span> en ${PORT} - PID ${process.pid} - ${moment().format('DD/MM/YYYY HH:mm')}`);
 });
 
-app.get('/mail', (req, res)=>{
-    
-let transporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: 'nels.yost71@ethereal.email', // generated ethereal user
-      pass: 'wMvBbSXGhrV12cT948', // generated ethereal password
-    },
-  });
-
-  // send mail with defined transport object
-  transporter.sendMail({
-    from: '"Servidor node', // sender address
-    to: "nels.yost71@ethereal.email", // list of receivers
-    subject: "Mail de prueba", // Subject line
-    text: "Hello world", // plain text body
-    html: "<b>Hello world!</b>", // html body
-  },(err,inf)=>{
-      if(err){
-      console.log(err)
-      return err
-      }
-  });
-
-    res.send({text:'mail mandado'})
-});
-
-app.get('/gmail', (req, res)=>{
-    
-    let transporter = nodemailer.createTransport({
-        service:"gmail",
-        auth: {
-          user: 'pruebam097@gmail.com', // generated ethereal user
-          pass: 'contra.de.prueba.11', // generated ethereal password
-        },
-      });
-    
-      // send mail with defined transport object
-      transporter.sendMail({
-        from: '"Servidor node', // sender address
-        to: "lofarobruno@gmail.com", // list of receivers
-        subject: "Mail de prueba", // Subject line
-        text: "Hello world", // plain text body
-        html: "<b>Hello world!</b>", // html body,
-        attachments:{
-            path: './warn.log'
-        }
-      },(err,inf)=>{
-          if(err){
-          console.log(err)
-          return err
-          }
-      });
-    
-        res.send({text:'mail mandado'})
-    });
 app.get('*', logInRoutes.failRoute);
 
 
@@ -421,6 +447,16 @@ io.on('connection', (socket)=> {
         })
     })
     socket.on('nuevo-mensaje', (mensaje)=>{
+        if(mensaje.text === 'administrador')
+        {
+            client.messages
+            .create({
+                body: 'Este es un sms de prueba',
+                from: '+13342315038',
+                to: '+541134361122'
+            })
+            .then(message => console.log('Se envió el mensaje ' + message.sid));
+        }
         let tiempo = moment().format('DD/MM/YYYY, HH:MM:SS a');
         mensaje.creadoEn= tiempo
         const mensajeSaveModel = new mensajeModel.mensajes(mensaje)
@@ -450,7 +486,8 @@ app.set('view engine', 'hbs');
 passport.use(new FacebookStrategy({
     clientID: fb_client_id,
     clientSecret: fb_client_secret,
-    callbackURL: `https://coderhouse--ecommerce.herokuapp.com/auth/facebook/datos`,
+    //callbackURL: `https://coderhouse--ecommerce.herokuapp.com/auth/facebook/datos`,
+    callbackURL: `https://localhost:8443/auth/facebook/datos`,
     profileFields: ['id','name','emails','photos']
   },
   function(accessToken, refreshToken, profile, cb) {
@@ -466,6 +503,7 @@ passport.use(new FacebookStrategy({
             facebookId: userData.id, 
             name: userData.first_name+' '+userData.last_name, 
             picture: userData.picture.data.url,
+            mail: userData.email
         }
         usuarios.push(nuevoUsuario);
         return cb(null, nuevoUsuario)
