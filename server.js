@@ -57,7 +57,7 @@ mongoose.connect(url,connectionParams)
 //logger
 log4js.configure({
     appenders: {
-      fileWarnAppender: { type: "file", filename: 'warn.log' },
+      fileWarnAppender: { type: "file", filename: 'logs/warn.log' },
       fileErrorAppender: { type: "file", filename: 'error.log' },
       justWarns: { type: 'logLevelFilter', appender: 'fileWarnAppender', level: 'warn' },
       consoleAppender: { type: "console" }
