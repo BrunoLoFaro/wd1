@@ -2,7 +2,6 @@ const dotenv = require('dotenv')
 dotenv.config({path: './config/.env'})
 const routes = require('./routes/productos.routes.js')
 const express = require('express')
-const { engine } = require('express-handlebars')
 const socket_io = require('socket.io')
 const Server = socket_io.Server
 const https = require('https')
@@ -36,8 +35,6 @@ const client = require('twilio')(accountSid, authToken);
 
 //deployed in heroku
 const usuarios = [];
-
-
 
 //conexion a db
 
@@ -476,16 +473,6 @@ io.on('connection', (socket)=> {
     })
 })
 })
-
-//handlebars. Motor de vistas. Envio vistas con info del back
-app.engine('hbs', engine({
-    defaultLayout: 'index',
-    extname: '.hbs'
-}));
-
-app.set('view engine', 'hbs');
-
-}
 
 passport.use(new FacebookStrategy({
     clientID: fb_client_id,

@@ -1,5 +1,4 @@
 function getLogout(req, res){
-    console.log("passed")
     req.logout();
     res.redirect('/');
 }
