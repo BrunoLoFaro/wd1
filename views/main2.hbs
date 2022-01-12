@@ -1,0 +1,125 @@
+	<script type="module" src="/layouts/index.js"></script>
+    <<script src="https://cdn.jsdelivr.net/npm/normalizr@3.6.1/dist/normalizr.min.js"></script>
+
+	<style>
+		#del {
+			position: absolute;
+			top: 0px;
+			right: 0px;
+		}
+	</style>
+<script>
+var socket = io();
+	function enviarProd(valor) {
+    let prod={
+        nombre:document.getElementById('titulo').value,
+        precio:document.getElementById('precio').value,
+        foto:document.getElementById('foto').value
+    };
+    console.log(prod)
+    socket.emit('producto', prod);
+    return false
+}
+function log(){
+	//let name = document.getElementById('user').value
+	socket.emit('new-user', "ricardito");
+	console.log(name)
+/*req.session.user=name
+console.log(req.session.user)*/
+}
+	function enviarMens(event) {
+	let author={
+        id:document.getElementById('id').value,
+        nombre:document.getElementById('nombre').value,
+        apellido:document.getElementById('apellido').value,	
+        edad:document.getElementById('edad').value,	
+        alias:document.getElementById('alias').value		
+	}
+    let mens={
+		author:author,
+		text:document.getElementById('text').value
+    };
+    socket.emit('nuevo-mensaje', mens);
+    //return false
+} 	
+
+	function eliminar(elem, string){
+    let nombre=elem.innerHTML
+    console.log(nombre)
+    socket.emit(string, nombre);
+    return false
+}
+</script>
+
+    <h1>Venta de productos</h1>
+    <form onsubmit="enviarProd(this);return false" style="margin:20px;">
+        <input type="text" id="titulo" placeholder="nombre">
+        <input type="text" id="precio" placeholder="precio">
+        <input type="text" id="foto" placeholder="imagen(url)">
+		<input type="submit" value="guardar">
+	</form>
+<div ></div>
+
+<div class="container">
+    <div class="row clearfix">
+		<div class="col-md-12 column">
+			<table class="table table-bordered table-hover" id="tab_logic">
+				<thead>
+					<tr>
+						<th class="text-center">
+							Nombre
+						</th>
+						<th class="text-center">
+							Precio
+						</th>
+						<th class="text-center">
+							Imagen
+						</th>
+					</tr>
+				</thead>
+				<tbody id="tabla">        
+                    {{#each productos}}
+                    <tr id='addr0'>
+						<th class="text-center">
+							{{this.nombre}}
+						</th>
+                        <th class="text-center">
+							{{this.precio}}$
+						</th>
+						<th>
+						<div class="col-md-4">
+							<img src="{{this.foto}} " width="20%">
+						</th>
+                    {{/each}}
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+<h1>Chat en línea</h1>
+<div id="mensajes"></div>
+<br>
+
+<form class="form-control "onsubmit="enviarMens(this);return false" style="margin:20px;">
+	<input type="text" id="id" placeholder="Su mail...">
+	<input type="text" id="nombre" placeholder="Su nombre...">
+	<input type="text" id="apellido" placeholder="Su apellido...">
+	<input type="number" id="edad" placeholder="Su edad...">
+	<input type="text" id="alias" placeholder="Su alias...">
+	<input type="text" id="avatar" placeholder="Su avatar...">
+	<input type="text" id="text" placeholder="Su texto...">
+	<input type="submit" value="enviarMensaje">
+	<!--<button id="button" type="button" onClick="enviarMensaje" class="btn btn-primary">Submit</button>-->
+</form>
+<div class="card" style="   position:absolute;
+   top:0;
+   right:0;">
+  <div class="card-body">
+    <h5 class="card-title">Bienvenido {{usuario.name}}</h5>
+	<img src="{{usuario.picture}} " width="20%">
+	<form class="form-control " action="/logout" method="GET">
+	<input type="submit" value="desloguearse"/> 
+	</form>
+  </div>
+</div>
