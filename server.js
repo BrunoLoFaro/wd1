@@ -11,7 +11,7 @@ const productoModel = require('./models/producto.model.js')
 const mensajeModel = require('./models/mensaje.model.js')
 const productos = require('./api/productos.js')
 const {normalize, schema} = require('normalizr');
-const util = require('util')
+const util = require('util.js')
 const mongoose = require('mongoose')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')
@@ -103,8 +103,7 @@ const httpsOptions = {
     cert: fs.readFileSync('./sslcert/cert.pem')
 }
 
-
-//"modelo" para mongo
+//schemas para normalizar
 const authorSchema = new schema.Entity('authors')
 const textSchema = new schema.Entity('texts')
 const creadoEnSchema = new schema.Entity('creadoEn')
@@ -121,11 +120,6 @@ const mensajeSchema = new schema.Entity('mensajes',{
 const holdingMensajesSchema = new schema.Entity('holding',{
     mensajes:[mensajeSchema]
 })
-
-//Funcion auxiliar. Imprime objetos dentro de objetos segun depth
-function print(objeto, depth) {
-    console.log(util.inspect(objeto,false,depth,true))
-}
 
 //modos de ejecucion. Usi de uno o varios nucleos
 if(modo=='CLUSTER' && cluster.isMaster){
@@ -151,19 +145,7 @@ app.use|(express.urlencoded({extended: true}));
 app.use(express.static('views'));
 
 app.use(cors())
-/*
-app.get('/mainPage', (req,res)=>{
-    console.log("1")
-    passport.authenticate('facebook', { failureRedirect: '/error-login.html' }),
-    function(req, res) {
-        console.log("2")
-    //var scripts = '/layouts/index.js';
-    var user = req.session.user
-    //res.render('main',{script: scripts, user});
-    res.render('main',{user});
-    }
-})
-*/
+
 //guardo las sesiones en mongo
 
 app.use(session({
@@ -191,114 +173,17 @@ app.get('/auth/facebook/datos',
   function(req, res) {
     var scripts = '/layouts/index.js';
     let usuario = usuarios[0]
-    res.render('main',{script: scripts,usuario});
-/*
-    let transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        auth: {
-        user: 'nels.yost71@ethereal.email', // generated ethereal user
-        pass: 'wMvBbSXGhrV12cT948', // generated ethereal password
-        },
-    });
-    let date_obj = moment().format('DD/MM/YYYY HH:mm')
-    // send mail with defined transport object
-    transporter.sendMail({
-        from: '"Servidor node', // sender address
-        to: usuarios[0].mail, // list of receivers
-        subject: "log in " + usuarios[0].name + date_obj, // Subject line
-        text: usuarios[0].name + " se logeo al ecommerce de venta de libros a las " + date_obj, // plain text body
-        html: "<b>Hello world!</b>", // html body
-    },(err,inf)=>{
-        if(err){
-        console.log(err)
-        return err
-        }
-    });
-
-    console.log('mail 1 de login mandado')
-
-    let transporter2 = nodemailer.createTransport({
-        service:"gmail",
-        auth: {
-          user: 'pruebam097@gmail.com', // generated ethereal user
-          pass: 'contra.de.prueba.11', // generated ethereal password
-        },
-      });
-    
-      // send mail with defined transport object
-      transporter2.sendMail({
-        from: '"Servidor node', // sender address
-        to: "lofarobruno@gmail.com", // list of receivers
-        subject: "log in" + usuarios[0].name + date_obj, // Subject line
-        text: "Hello world", // plain text body
-        html: "<b>Hello world!</b>", // html body,
-        attachments:{
-            path: usuarios[0].picture
-        }
-      },(err,inf)=>{
-          if(err){
-          console.log(err)
-          return err
-          }
-      });
-    
-        console.log('mail 2 de login mandado')
-        */
+    res.send('autenticado');
 });
-
-
-//esto se saltea el login. Es para probar
-
-app.get('/vista-test', (req,res)=>{
-    var scripts = '/layouts/index.js';
-    var user = req.session.user
-    res.render('main',{script: scripts, user});
-})
 
 app.get('/books', (req,res)=>{
     var user = req.session.user
-    res.render('books');
+    res.send('books');
 })
-
-app.get('/', (req,res)=>{
-    res.render('login');
-})
-
-function sendMail (req, res, next){
-        logger.info('logging out')
-            let transporter = nodemailer.createTransport({
-                host: "smtp.ethereal.email",
-                port: 587,
-                secure: false, // true for 465, false for other ports
-                auth: {
-                user: 'nels.yost71@ethereal.email', // generated ethereal user
-                pass: 'wMvBbSXGhrV12cT948', // generated ethereal password
-                },
-                });
-                let date_obj2 = moment().format('DD/MM/YYYY HH:mm')
-                // send mail with defined transport object
-                    transporter.sendMail({
-                    from: '"Servidor node', // sender address
-                    to: usuarios[0].mail, // list of receivers
-                    subject: "log out", // Subject line
-                    text: usuarios[0].name + " se logeo al ecommerce de venta de libros a las " + date_obj2, // plain text body
-                    html: "<b>Hello world!</b>", // html body
-            },(err,inf)=>{
-            if(err){
-            logger.waring(err)
-            return err
-            }
-            });
-            logger.info('mail de logout mandado')
-    next()
-}
-
 
 app.get('/logout',/*sendMail,*/logInRoutes.getLogout)
 
 //app.get('/', checkAuthentication, logInRoutes.getRutaProtegida(req,res));
-
-
 
 app.get('/random', function (req, res, next) {
 //desactivo el child process
@@ -329,7 +214,6 @@ app.get('/random', function (req, res, next) {
         numCPUs
     }
     logger.info(data)
-    res.render('info',{data});
  });
 
  app.get('/datos', (req, res)=>{
@@ -356,7 +240,6 @@ io.on('connection', (socket)=> {
 
     //console.log(`conectado, cliente: ${socket.id}`)
 
-
     mensajeModel.mensajes.find({}).then((mensajes)=>{
         io.sockets.emit('mensajes', mensajes);
         
@@ -367,10 +250,10 @@ io.on('connection', (socket)=> {
         
         const holdingMensajesNormalizado = normalize(holdingMensajes,holdingMensajesSchema)
         //console.log("sin normalizar")
-        //print(holdingMensajes);
+        //util.print(holdingMensajes);
         //console.log("\n\n\n")
         //console.log("normalizado")
-        //print(holdingMensajesNormalizado);
+        //util.print(holdingMensajesNormalizado);
         
         let longAntes = JSON.stringify(holdingMensajes).length
         let longDespues = JSON.stringify(holdingMensajesNormalizado).length
@@ -382,28 +265,10 @@ io.on('connection', (socket)=> {
     
    })
     
-    /*
-    productos.genMsj.then((msjs_guardados)=>{
-        for(let e of msjs_guardados)
-        {
-            console.log(e)
-            const mensajeSaveModel = new mensajeModel.mensajes(e)
-            mensajeSaveModel.save()
-            .then(()=>{
-                console.log(`${e} guardado`)
-            })
-        }                
-
-        //io.sockets.emit('mensajes', msjs_guardados)
-    })*/
     
     productoModel.productos.find({}).then((productos_guardados)=>{
         io.sockets.emit('productos', productos_guardados);
     })
-    /*
-    productos.genProd.then((productos_guardados)=>{
-        io.sockets.emit('productos', productos_guardados);
-    })*/
 
     socket.on('producto',data=>{
         //console.log(data)
@@ -463,17 +328,20 @@ io.on('connection', (socket)=> {
         const mensajeSaveModel = new mensajeModel.mensajes(mensaje)
         mensajeSaveModel.save()
         .then((e)=>{
-            mensajeModel.mensajes.find({}).then((mensajes_guardados)=>{
+            mensajeModel.mensajes.find({})
+            .then((mensajes_guardados)=>{
             io.sockets.emit('mensajes', mensajes_guardados);
-        })
-        .catch(e=>{
-            //next(e)
-            logger.warning('error en insert',e)
+            })
+            .catch(e=>{
+                //next(e)
+                logger.warning('error en insert',e)
+            })
         })
     })
 })
-})
 
+
+//facebook auth
 passport.use(new FacebookStrategy({
     clientID: fb_client_id,
     clientSecret: fb_client_secret,
@@ -510,13 +378,4 @@ passport.serializeUser((user, done)=>{
 passport.deserializeUser((id, done)=>{
     let usuario = usuarios[usuarios.findIndex(e=>e.facebookId == id)];
     done(null, usuario);
-}); 
-
-//middleware auth function
-function checkAuthentication(req, res, next){
-    if (req.isAuthenticated()){
-        next();
-    } else {
-        res.redirect('/auth/facebook/datos');
-    }
-}
+})

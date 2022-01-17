@@ -1,16 +1,7 @@
 const Router = require('express')
-//import {Router} from "express"
-const generar = require('../api/productos.js')
-//import {generar} from "../api/productos.js"
 const logInRoutes = require('./logInRoutes.js')
 //import * as logInRoutes from "./logInRoutes.js"
-/*import {
-    getProducto,
-    getProductoById,
-    postProducto,
-    putProducto,
-    deleteProducto,
-} from "../controllers/productos.controller.js"*/
+const controller = require from "../controllers/productos.controller.js"*/
 
 const prodController = require('../controllers/productos.controller.js')
 
@@ -18,11 +9,11 @@ const productosRouter = Router()
 exports.productosRouter = productosRouter
 
 productosRouter
-    .get("/listar", prodController.getProducto)
-    .get("/listar/:id", prodController.getProductoById)
-    .post("/agregar", prodController.postProducto)
-    .put("/actualizar", prodController.putProducto)
-    .delete("/borrar/:id", prodController.deleteProducto);
+    .get("/producto", prodController.getProducto)
+    .get("/producto/:id", prodController.getProductoById)
+    .post("/producto", prodController.postProducto)
+    .put("/productor", prodController.putProducto)
+    .delete("/producto/:id", prodController.deleteProducto);
 
 const productosTestRouter = Router()
 exports.productosTestRouter = productosTestRouter
